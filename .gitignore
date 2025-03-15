@@ -1,5 +1,5 @@
 # Ignore .css, .xlsx, and .png files
-*.css
+*.csv
 *.xlsx
 *.png
 # Ignore R-related user files
