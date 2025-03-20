@@ -37,8 +37,8 @@ library(car)
 ## Load Data
 
 ```{r}
-#seda <- read.csv(file = "feb13_student_talkmove_achievement_merged.csv")
-seda <- read.csv(file = "jan26_student_talkmove_achievement_merged")
+#seda <- read.csv(file = "jan26_student_talkmove_achievement_merged.csv")
+seda <- read.csv(file = "march_17_3_old_model_student_talkmove_achievement_survey_merged_using_old_file_include_student_tutor.csv")
 ```
 
 
@@ -53,6 +53,10 @@ seda_mth <- seda_mth %>% filter(is_in_achievement == 1)
 
 #Select Student_Tutor with no multiple achievement score
 seda_mth <- seda_mth %>% filter(is_duplicated_student_tutor_x == 0)
+
+#seda_mth <- seda_mth %>% filter(is_multiple_student_tutor_x == 0)
+
+
 
 # Select Student_Tutor with unique_session_IDs_count > 10
 seda_mth <- seda_mth %>% filter(unique_session_IDs_count >= 10)
@@ -81,8 +85,8 @@ seda_mth <- seda_mth %>%
          student_asking_for_info_ratio = unweighted_student_asking_for_info_ratio,
          student_making_claim_ratio = unweighted_student_making_claim_ratio,
          student_providing_evidence_ratio = unweighted_student_providing_evidence_ratio,
-         Intercept = I,
-         Slope = S,
+         #Intercept = I,
+         #Slope = S,
          co_student_relating_ratio = unweighted_co_student_relating_ratio,
          co_student_asking_for_info_ratio = unweighted_co_student_asking_for_info_ratio,
          co_student_making_claim_ratio = unweighted_co_student_making_claim_ratio,
