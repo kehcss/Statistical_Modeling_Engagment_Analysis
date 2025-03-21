@@ -38,8 +38,13 @@ library(car)
 
 ```{r}
 #seda <- read.csv(file = "jan26_student_talkmove_achievement_merged.csv")
-seda <- read.csv(file = "march_17_3_old_model_student_talkmove_achievement_survey_merged_using_old_file_include_student_tutor.csv")
+#seda <- read.csv(file = "march_14_student_talkmove_achievement_survey_merged.csv")
+#seda <- read.csv(file = "march_19_retrace_steps_new_TM_model_new_achievement_survey_merged.csv")
+seda <- read.csv(file = "march_19_2_retrace_steps_new_TM_model_old_achievement_survey_merged.csv")
+
+
 ```
+
 
 
 
@@ -958,47 +963,6 @@ tab_model(model21120, model29120)
 
 
 
-
-
-## Interaction of student and co_student on individual talkmove labels
-```{r}
-#Adding Individual Talkmove Predictors 30
-model_301 <- blmer(Slope ~ student_relating_ratio_w*co_student_relating_ratio_w + tutor_utterance_ratio_w +
-              (1 | tutor_ID),
-              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
-
-```
-
-```{r}
-#Adding Individual Talkmove Predictors 31
-model_311 <- blmer(Slope ~ student_asking_for_info_ratio_w*co_student_asking_for_info_ratio_w + tutor_utterance_ratio_w +
-              (1 | tutor_ID),
-              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
-
-```
-  
-
-```{r}
-#Adding Individual Talkmove Predictors 32
-model_321 <- blmer(Slope ~ student_making_claim_ratio_w*co_student_making_claim_ratio_w + tutor_utterance_ratio_w +
-              (1 | tutor_ID),
-              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
-
-```
-
-```{r}
-#Adding Individual Talkmove Predictors 32
-model_331 <- blmer(Slope ~ student_providing_evidence_ratio_w*co_student_providing_evidence_ratio_w +
-              (1 | tutor_ID),
-              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
-
-```
-
-
-```{r}
-# Display the model summary
-tab_model(model_301, model_311, model_321, model_331,  dv.labels = c("Student Relating", "Student Asking for Info", "Student making claim", "Student providing evidence"))
-```
 
 
 
