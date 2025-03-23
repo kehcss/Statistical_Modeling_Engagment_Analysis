@@ -81,7 +81,6 @@ dim(seda_mth)
 
 
 
-
 ## Column Renaming
 
 ```{r}
@@ -107,6 +106,39 @@ seda_mth <- seda_mth %>%
 
 ```
 
+
+## Rescaling Achievement Intercept and Slope
+
+```{r}
+seda_mth <- seda_mth %>%
+  mutate(
+         Slope = Slope *100,
+         Intercept = Intercept*100
+  )
+
+```
+
+
+## Cummulate Frequency Table of data  
+```{r}
+
+freq_table <- function(x)
+{
+  return(cbind(Freq=table(x), Cumul=cumsum(prop.table(table(x))), relative=prop.table(table(x))));
+}
+
+# Print the frequency table in 2 decimal places
+
+
+freq_table(round(seda_mth$student_group_talkmove_ratio, 2) )
+
+# freq_table(seda_mth$tutor_reasoning)
+
+```
+
+
+
+
 ## Winzeration of Predictor variables
 ```{r}
 #Winsorize the variables
@@ -121,16 +153,8 @@ for (var in Vars) {
 
 
 
-## Rescaling Achievement Intercept and Slope
 
-```{r}
-seda_mth <- seda_mth %>%
-  mutate(
-         Slope = Slope *100,
-         Intercept = Intercept*100
-  )
 
-```
 
 
 ## Level 1 Descriptives
@@ -528,7 +552,7 @@ tab_model(model_30, model_31, model_32, model_33,  dv.labels = c("Student Relati
 
 
 
-### USING THE ROBUST MODEL: Student Group Talkmove labels
+<!-- ### USING THE ROBUST MODEL: Student Group Talkmove labels -->
 <!-- # ```{r} -->
 <!-- # #Adding Individual Talkmove Predictors 30 -->
 <!-- # model_3067 <- rlmer(Slope ~ student_group_relating_ratio + -->
