@@ -38,8 +38,7 @@ library(car)
 ## Load Data
 
 ```{r}
-seda <- read.csv(file = "march_14_group_modelling_student_talkmove_achievement_survey_merged.csv")
-#seda <- read.csv(file = "march_19_group_modelling_student_talkmove_old_achievement_survey_merged.csv")
+seda <- read.csv(file = "march_26_group_var_euclince_modelling_student_talkmove_old_achievement_survey_merged.csv")
 
 ```
 
@@ -87,21 +86,21 @@ dim(seda_mth)
 #Unweighted variables implies speaker level averaging
 seda_mth <- seda_mth %>%
   mutate(
-         student_group_talkmove_ratio = unweighted_student_talkmove_ratio,
-         student_group_utterance_ratio = unweighted_student_utterance_ratio,
-         tutor_talkmove_ratio = unweighted_tutor_talkmove_ratio,
-         tutor_utterance_ratio = unweighted_tutor_utterance_ratio,
-         student_group_relating_ratio = unweighted_student_relating_ratio,
-         student_group_asking_for_info_ratio = unweighted_student_asking_for_info_ratio,
-         student_group_making_claim_ratio = unweighted_student_making_claim_ratio,
-         student_group_providing_evidence_ratio = unweighted_student_providing_evidence_ratio,
-         Intercept = I,
-         Slope = S,
-         tutor_keeping_together = unweighted_tutor_keeping_together_ratio,
-         tutor_students_relating = unweighted_tutor_students_relating_ratio,
-         tutor_restating = unweighted_tutor_restating_ratio,
-         tutor_revoicing = unweighted_tutor_revoicing_ratio,
-         tutor_reasoning = unweighted_tutor_reasoning_ratio,
+         student_group_talkmove_ratio = mean_talk_move_counts_eucli_dist,
+         student_group_utterance_ratio = mean_utterance_counts_eucli_dist,
+         # tutor_talkmove_ratio = unweighted_tutor_talkmove_ratio,
+         # tutor_utterance_ratio = unweighted_tutor_utterance_ratio,
+         student_group_relating_ratio = mean_student_relating_counts_eucli_dist,
+         student_group_asking_for_info_ratio = mean_student_asking_for_info_counts_eucli_dist,
+         student_group_making_claim_ratio = mean_student_making_claim_counts_eucli_dist,
+         student_group_providing_evidence_ratio = mean_student_providing_evidence_counts_eucli_dist,
+         # Intercept = I,
+         # Slope = S,
+         # tutor_keeping_together = unweighted_tutor_keeping_together_ratio,
+         # tutor_students_relating = unweighted_tutor_students_relating_ratio,
+         # tutor_restating = unweighted_tutor_restating_ratio,
+         # tutor_revoicing = unweighted_tutor_revoicing_ratio,
+         # tutor_reasoning = unweighted_tutor_reasoning_ratio,
   )
 
 ```
@@ -140,7 +139,7 @@ freq_table(round(seda_mth$unique_session_IDs_count, 4) )
 ```{r}
 #Winsorize the variables
 
-Vars <- c("student_group_talkmove_ratio", "tutor_talkmove_ratio", "student_group_utterance_ratio", "tutor_utterance_ratio", "student_group_relating_ratio", "student_group_asking_for_info_ratio", "student_group_making_claim_ratio", "student_group_providing_evidence_ratio", "tutor_keeping_together", "tutor_students_relating", "tutor_restating", "tutor_revoicing", "tutor_reasoning")
+Vars <- c("student_group_talkmove_ratio",  "student_group_utterance_ratio",  "student_group_relating_ratio", "student_group_asking_for_info_ratio", "student_group_making_claim_ratio", "student_group_providing_evidence_ratio")
 
 for (var in Vars) {
   seda_mth[paste0(var, "_w")] <- Winsorize(seda_mth[[var]], quantile(seda_mth[[var]], probs=c(0.0, 0.99), na.rm = FALSE))
@@ -408,9 +407,11 @@ tab_corr(data)
 ### Speaker's Talkmove Ratios as Predictors
 ```{r}
 #Adding Talkmove Predictors 01
-model_01 <- lmer(Slope ~ student_group_talkmove_ratio_w + unique_session_IDs_count +
+model_01 <- lmer(Slope ~ student_group_asking_for_info_ratio_w + unique_session_IDs_count +
               (1 | student_tutor_group),
               data = seda_mth, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+tab_model(model_01)
 
 ```
 
@@ -422,10 +423,10 @@ model_01 <- lmer(Slope ~ student_group_talkmove_ratio_w + unique_session_IDs_cou
 ```
 
 ```{r}
-#Adding Talkmove Predictors 03
-model_03 <- lmer(Slope ~ tutor_talkmove_ratio_w + unique_session_IDs_count + 
-              (1 | student_tutor_group),
-              data = seda_mth, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+# #Adding Talkmove Predictors 03
+# model_03 <- lmer(Slope ~ tutor_talkmove_ratio_w + unique_session_IDs_count + 
+#               (1 | student_tutor_group),
+#               data = seda_mth, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
 ```
 
 ```{r}
