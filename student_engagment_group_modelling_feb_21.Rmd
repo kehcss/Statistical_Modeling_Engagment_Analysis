@@ -128,11 +128,8 @@ freq_table <- function(x)
 }
 
 # Print the frequency table in 2 decimal places
+freq_table(round(seda_mth$unique_session_IDs_count, 4) )
 
-
-freq_table(round(seda_mth$student_group_talkmove_ratio, 2) )
-
-# freq_table(seda_mth$tutor_reasoning)
 
 ```
 
