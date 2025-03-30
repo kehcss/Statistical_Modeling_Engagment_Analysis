@@ -39,8 +39,8 @@ library(car)
 ```{r}
 #seda <- read.csv(file = "jan26_student_talkmove_achievement_merged.csv")
 #seda <- read.csv(file = "march_14_student_talkmove_achievement_survey_merged.csv")
-#seda <- read.csv(file = "march_19_retrace_steps_new_TM_model_new_achievement_survey_merged.csv")
-seda <- read.csv(file = "march_19_2_retrace_steps_new_TM_model_old_achievement_survey_merged.csv")
+seda <- read.csv(file = "march_19_retrace_steps_new_TM_model_new_achievement_survey_merged.csv")
+#seda <- read.csv(file = "march_19_2_retrace_steps_new_TM_model_old_achievement_survey_merged.csv")
 
 
 ```
@@ -90,8 +90,8 @@ seda_mth <- seda_mth %>%
          student_asking_for_info_ratio = unweighted_student_asking_for_info_ratio,
          student_making_claim_ratio = unweighted_student_making_claim_ratio,
          student_providing_evidence_ratio = unweighted_student_providing_evidence_ratio,
-         #Intercept = I,
-         #Slope = S,
+         Intercept = I,
+         Slope = S,
          co_student_relating_ratio = unweighted_co_student_relating_ratio,
          co_student_asking_for_info_ratio = unweighted_co_student_asking_for_info_ratio,
          co_student_making_claim_ratio = unweighted_co_student_making_claim_ratio,
@@ -126,7 +126,7 @@ seda_mth$student_talkmove_ratio_m <- mahalanobis(seda_mth[,c("student_talkmove_r
 Vars <- c("student_talkmove_ratio", "co_student_talkmove_ratio", "tutor_talkmove_ratio", "student_utterance_ratio", "co_student_utterance_ratio", "tutor_utterance_ratio", "student_relating_ratio", "student_asking_for_info_ratio", "student_making_claim_ratio", "student_providing_evidence_ratio", "co_student_relating_ratio", "co_student_asking_for_info_ratio", "co_student_making_claim_ratio", "co_student_providing_evidence_ratio", "tutor_keeping_together", "tutor_students_relating", "tutor_restating", "tutor_revoicing", "tutor_reasoning")
 
 for (var in Vars) {
-  seda_mth[paste0(var, "_w")] <- scale(Winsorize(seda_mth[[var]], quantile(seda_mth[[var]], probs=c(0, 0.99), na.rm = FALSE)))
+  seda_mth[paste0(var, "_w")] <- Winsorize(seda_mth[[var]], quantile(seda_mth[[var]], probs=c(0, 0.99), na.rm = FALSE))
 }
 
 # Plot histogram of the winsorized variables
@@ -153,6 +153,19 @@ hist(seda_mth$tutor_reasoning_w)
 ```
 
 
+## Cummulate Frequency Table of data  
+```{r}
+
+freq_table <- function(x)
+{
+  return(cbind(Freq=table(x), Cumul=cumsum(prop.table(table(x))), relative=prop.table(table(x))));
+}
+
+# Print the frequency table in 2 decimal places
+freq_table(round(seda_mth$student_talkmove_ratio_w, 3) )
+
+
+```
 
 
 
@@ -470,7 +483,7 @@ tab_corr(data)
 ### Speaker's Talkmove Ratios as Predictors
 ```{r}
 #Adding Talkmove Predictors 01
-model_01 <- blmer(Slope ~ student_talkmove_ratio_w +
+model_01 <- blmer(Slope ~ student_talkmove_ratio_w + unique_session_IDs_count +
               (1 + student_talkmove_ratio_w | tutor_ID),
               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
 #tab_model(model_01)
@@ -480,7 +493,7 @@ model_01 <- blmer(Slope ~ student_talkmove_ratio_w +
 
 ```{r}
 #Adding Talkmove Predictors 02
-model_02 <- blmer(Slope ~ co_student_talkmove_ratio_w +
+model_02 <- blmer(Slope ~ co_student_talkmove_ratio_w + unique_session_IDs_count +
               (1 + co_student_talkmove_ratio_w | tutor_ID),
               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
 ```
@@ -488,7 +501,7 @@ model_02 <- blmer(Slope ~ co_student_talkmove_ratio_w +
   
 ```{r}
 #Adding Talkmove Predictors 03
-model_03 <- blmer(Slope ~ tutor_talkmove_ratio_w +
+model_03 <- blmer(Slope ~ tutor_talkmove_ratio_w + unique_session_IDs_count +
               (1 | tutor_ID),
               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
 ```
@@ -501,7 +514,7 @@ tab_model(model_01, model_02, model_03,  dv.labels = c("Student TalkMove", "Co s
 
 ### Combined speaker talkmove ratios as predictors
 ```{r}
-model_040 <- blmer(Slope ~ student_talkmove_ratio_w + co_student_talkmove_ratio_w + tutor_talkmove_ratio_w +
+model_040 <- blmer(Slope ~ student_talkmove_ratio_w + co_student_talkmove_ratio_w + tutor_talkmove_ratio_w + unique_session_IDs_count +
               (1 + student_talkmove_ratio_w + co_student_talkmove_ratio_w  | tutor_ID),
               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
 tab_model(model_040)
@@ -594,7 +607,7 @@ tab_model(model_20, model_22, model_23,  dv.labels = c("Student Utterance", "Co 
 ### Talkmove by Student
 ```{r}
 #Adding Individual Talkmove Predictors 30
-model_301 <- blmer(Slope ~ student_relating_ratio_w +
+model_301 <- blmer(Slope ~ student_relating_ratio_w + unique_session_IDs_count +
               (1 + student_relating_ratio_w | tutor_ID),
               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
 
@@ -602,7 +615,7 @@ model_301 <- blmer(Slope ~ student_relating_ratio_w +
 
 ```{r}
 #Adding Individual Talkmove Predictors 31
-model_311 <- blmer(Slope ~ student_asking_for_info_ratio_w +
+model_311 <- blmer(Slope ~ student_asking_for_info_ratio_w + unique_session_IDs_count +
               (1 + student_asking_for_info_ratio_w | tutor_ID),
               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
 
@@ -611,7 +624,7 @@ model_311 <- blmer(Slope ~ student_asking_for_info_ratio_w +
 
 ```{r}
 #Adding Individual Talkmove Predictors 32
-model_321 <- blmer(Slope ~ student_making_claim_ratio_w +
+model_321 <- blmer(Slope ~ student_making_claim_ratio_w + unique_session_IDs_count +
               (1 + student_making_claim_ratio_w | tutor_ID),
               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
 
@@ -619,7 +632,7 @@ model_321 <- blmer(Slope ~ student_making_claim_ratio_w +
 
 ```{r}
 #Adding Individual Talkmove Predictors 32
-model_331 <- blmer(Slope ~ student_providing_evidence_ratio_w +
+model_331 <- blmer(Slope ~ student_providing_evidence_ratio_w + unique_session_IDs_count +
               (1 + student_providing_evidence_ratio_w | tutor_ID),
               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
 
@@ -960,6 +973,14 @@ tab_model(model21120, model29120)
 ```
 
 
+
+<!-- ## Interaction Effects -->
+<!-- ```{r} -->
+
+<!-- model29102 <- rlmer(Slope ~ student_talkmove_ratio*co_student_talkmove_ratio + student_talkmove_ratio *tutor_talkmove_ratio + tutor_utterance_ratio + (1| tutor_ID), data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa")) -->
+
+<!-- tab_model(model29102) -->
+<!-- ``` -->
 
 
 
