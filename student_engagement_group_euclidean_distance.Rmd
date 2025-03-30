@@ -38,7 +38,7 @@ library(car)
 ## Load Data
 
 ```{r}
-seda <- read.csv(file = "march_26_group_var_euclince_modelling_student_talkmove_old_achievement_survey_merged.csv")
+seda <- read.csv(file = "march_29_group_var_euclince_modelling_student_talkmove_new_achievement_survey_merged.csv")
 
 ```
 
@@ -94,8 +94,8 @@ seda_mth <- seda_mth %>%
          student_group_asking_for_info_ratio = mean_student_asking_for_info_counts_eucli_dist,
          student_group_making_claim_ratio = mean_student_making_claim_counts_eucli_dist,
          student_group_providing_evidence_ratio = mean_student_providing_evidence_counts_eucli_dist,
-         # Intercept = I,
-         # Slope = S,
+         Intercept = I,
+         Slope = S,
          # tutor_keeping_together = unweighted_tutor_keeping_together_ratio,
          # tutor_students_relating = unweighted_tutor_students_relating_ratio,
          # tutor_restating = unweighted_tutor_restating_ratio,
@@ -117,6 +117,20 @@ seda_mth <- seda_mth %>%
 
 ```
 
+## Histogram for predictors before winsorization
+```{r}
+#Histogram for all the predictors
+hist(seda_mth$student_group_talkmove_ratio)
+hist(seda_mth$student_group_utterance_ratio)
+hist(seda_mth$student_group_relating_ratio)
+hist(seda_mth$student_group_asking_for_info_ratio)
+hist(seda_mth$student_group_making_claim_ratio)
+hist(seda_mth$student_group_providing_evidence_ratio)
+hist(seda_mth$unique_session_IDs_count)
+
+```
+
+
 
 ## Cummulate Frequency Table of data  
 ```{r}
@@ -127,7 +141,7 @@ freq_table <- function(x)
 }
 
 # Print the frequency table in 2 decimal places
-freq_table(round(seda_mth$unique_session_IDs_count, 4) )
+freq_table(round(seda_mth$student_group_talkmove_ratio_w, 1) )
 
 
 ```
@@ -146,7 +160,18 @@ for (var in Vars) {
 }
 ```
 
+## Histogram for predictors after winsorization
+```{r}
+#Histogram for all the predictors
+hist(seda_mth$student_group_talkmove_ratio_w)
+hist(seda_mth$student_group_utterance_ratio_w)
+hist(seda_mth$student_group_relating_ratio_w)
+hist(seda_mth$student_group_asking_for_info_ratio_w)
+hist(seda_mth$student_group_making_claim_ratio_w)
+hist(seda_mth$student_group_providing_evidence_ratio_w)
+hist(seda_mth$unique_session_IDs_count)
 
+```
 
 
 
@@ -172,8 +197,8 @@ lev2 <- seda_mth %>%
     
     #Assigned_unique_student=n(),
     participant_count = mean(participant_count),
-    Mean_tutor_talkmove=mean(tutor_talkmove_ratio_w),
-    Mean_tutor_utterance=mean(tutor_utterance_ratio_w),
+    # Mean_tutor_talkmove=mean(tutor_talkmove_ratio_w),
+    # Mean_tutor_utterance=mean(tutor_utterance_ratio_w),
     Mean_student_group_talkmove=mean(student_group_talkmove_ratio_w),
     Mean_student_group_uttera=mean(student_group_utterance_ratio_w)
   ) %>%
@@ -218,11 +243,11 @@ ggplot(aes(x=student_group_talkmove_ratio_w), data = seda_mth) +
 ```
 
 ```{r}
-ggplot(aes(x=tutor_talkmove_ratio_w), data = seda_mth) +
-  geom_histogram(fill="grey",color="black") +
-  xlab("Histogram of Tutor's Proportion of Talkmove") +
-  ylab("Count") +
-  theme_bw() 
+# ggplot(aes(x=tutor_talkmove_ratio_w), data = seda_mth) +
+#   geom_histogram(fill="grey",color="black") +
+#   xlab("Histogram of Tutor's Proportion of Talkmove") +
+#   ylab("Count") +
+#   theme_bw() 
 ```
 
 ## Utterance Histogram for speaker type
@@ -236,11 +261,11 @@ ggplot(aes(x=student_group_utterance_ratio_w), data = seda_mth) +
 
 
 ```{r}
-ggplot(aes(x=tutor_utterance_ratio_w), data = seda_mth) +
-  geom_histogram(fill="grey",color="black") +
-  xlab("Histogram of Tutor's Utterance Proportion") +
-  ylab("Count") +
-  theme_bw() 
+# ggplot(aes(x=tutor_utterance_ratio_w), data = seda_mth) +
+#   geom_histogram(fill="grey",color="black") +
+#   xlab("Histogram of Tutor's Utterance Proportion") +
+#   ylab("Count") +
+#   theme_bw() 
 ```
 
 
@@ -259,14 +284,14 @@ ggsave(filename="pooledscatter.png", height=4, width=6.5)
 ```
 
 ```{r}
-seda_mth %>%
-  ggplot(aes(x=tutor_talkmove_ratio_w, y=Slope)) +
-  geom_point(pch=21, alpha=0.75, fill="grey") +
-  geom_smooth() +
-  ylab("Student Maths score Slope") +
-  xlab("Tutor's talkmoves proportion") +
-  theme_bw()
-ggsave(filename="pooledscatter.png", height=4, width=6.5)
+# seda_mth %>%
+#   ggplot(aes(x=tutor_talkmove_ratio_w, y=Slope)) +
+#   geom_point(pch=21, alpha=0.75, fill="grey") +
+#   geom_smooth() +
+#   ylab("Student Maths score Slope") +
+#   xlab("Tutor's talkmoves proportion") +
+#   theme_bw()
+# ggsave(filename="pooledscatter.png", height=4, width=6.5)
 ```
 
 
@@ -286,14 +311,14 @@ ggsave(filename="pooledscatter.png", height=4, width=6.5)
 
 
 ```{r}
-seda_mth %>%
-  ggplot(aes(x=tutor_utterance_ratio_w, y=Slope)) +
-  geom_point(pch=21, alpha=0.75, fill="grey") +
-  geom_smooth() +
-  ylab("Student Maths score Slope") +
-  xlab("Tutor utterance proportion") +
-  theme_bw()
-ggsave(filename="pooledscatter.png", height=4, width=6.5)
+# seda_mth %>%
+#   ggplot(aes(x=tutor_utterance_ratio_w, y=Slope)) +
+#   geom_point(pch=21, alpha=0.75, fill="grey") +
+#   geom_smooth() +
+#   ylab("Student Maths score Slope") +
+#   xlab("Tutor utterance proportion") +
+#   theme_bw()
+# ggsave(filename="pooledscatter.png", height=4, width=6.5)
 ```
 
 
@@ -407,7 +432,7 @@ tab_corr(data)
 ### Speaker's Talkmove Ratios as Predictors
 ```{r}
 #Adding Talkmove Predictors 01
-model_01 <- lmer(Slope ~ student_group_asking_for_info_ratio_w + unique_session_IDs_count +
+model_01 <- blmer(Slope ~ student_group_asking_for_info_ratio_w + unique_session_IDs_count +
               (1 | student_tutor_group),
               data = seda_mth, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
 
@@ -431,14 +456,14 @@ tab_model(model_01)
 
 ```{r}
 # Display the model summary
-tab_model(model_01, model_03,  dv.labels = c("Student Group TalkMove",  "Tutor Talkmove"))
+# tab_model(model_01, model_03,  dv.labels = c("Student Group TalkMove",  "Tutor Talkmove"))
 ```
 
 
 
 ```{r}
 #Adding Talkmove Predictors 04
-model_04 <- blmer(Slope ~ student_group_talkmove_ratio_w + tutor_talkmove_ratio_w + unique_session_IDs_count + 
+model_04 <- blmer(Slope ~ student_group_talkmove_ratio_w + tutor_talkmove_ratio_w + unique_session_IDs_count +
               (1 | student_tutor_group),
               data = seda_mth, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
 tab_model(model_04)
@@ -471,14 +496,16 @@ model_20 <- blmer(Slope ~ student_group_utterance_ratio_w + unique_session_IDs_c
               (1 | student_tutor_group),
               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
 
+tab_model(model_20)
+
 ```
   
   
 ```{r}
-#Adding Uterance Predictors 23
-model_23 <- blmer(Slope ~ tutor_utterance_ratio_w + unique_session_IDs_count + 
-              (1 | student_tutor_group),
-              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+# #Adding Uterance Predictors 23
+# model_23 <- blmer(Slope ~ tutor_utterance_ratio_w + unique_session_IDs_count + 
+#               (1 | student_tutor_group),
+#               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
 ```
 
 ```{r}
@@ -592,46 +619,46 @@ tab_model(model_30, model_31, model_32, model_33,  dv.labels = c("Student Relati
 
 
 
-### Tutor Talkmove labels
-```{r}
-#Adding Individual Talkmove Predictors 40
-model_40 <- blmer(Slope ~ tutor_keeping_together_w + unique_session_IDs_count +
-              (1 | student_tutor_group),
-              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
-```
+<!-- ### Tutor Talkmove labels -->
+<!-- ```{r} -->
+<!-- #Adding Individual Talkmove Predictors 40 -->
+<!-- model_40 <- blmer(Slope ~ tutor_keeping_together_w + unique_session_IDs_count + -->
+<!--               (1 | student_tutor_group), -->
+<!--               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa")) -->
+<!-- ``` -->
 
-```{r}
-#Adding Individual Talkmove Predictors 41
-model_41 <- blmer(Slope ~ tutor_students_relating_w + unique_session_IDs_count +
-              (1 | student_tutor_group),
-              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
-```
+<!-- ```{r} -->
+<!-- #Adding Individual Talkmove Predictors 41 -->
+<!-- model_41 <- blmer(Slope ~ tutor_students_relating_w + unique_session_IDs_count + -->
+<!--               (1 | student_tutor_group), -->
+<!--               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa")) -->
+<!-- ``` -->
 
-```{r}
-#Adding Individual Talkmove Predictors 42
-model_42 <- blmer(Slope ~ tutor_restating_w + unique_session_IDs_count +
-              (1 | student_tutor_group),
-              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
-```
+<!-- ```{r} -->
+<!-- #Adding Individual Talkmove Predictors 42 -->
+<!-- model_42 <- blmer(Slope ~ tutor_restating_w + unique_session_IDs_count + -->
+<!--               (1 | student_tutor_group), -->
+<!--               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa")) -->
+<!-- ``` -->
 
-```{r}
-#Adding Individual Talkmove Predictors 43
-model_43 <- blmer(Slope ~ tutor_revoicing_w + unique_session_IDs_count +
-              (1 | student_tutor_group),
-              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
-```
+<!-- ```{r} -->
+<!-- #Adding Individual Talkmove Predictors 43 -->
+<!-- model_43 <- blmer(Slope ~ tutor_revoicing_w + unique_session_IDs_count + -->
+<!--               (1 | student_tutor_group), -->
+<!--               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa")) -->
+<!-- ``` -->
 
-```{r}
-#Adding Individual Talkmove Predictors 44
-model_44 <- blmer(Slope ~ tutor_reasoning_w + unique_session_IDs_count +
-              (1 | student_tutor_group),
-              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
-```
+<!-- ```{r} -->
+<!-- #Adding Individual Talkmove Predictors 44 -->
+<!-- model_44 <- blmer(Slope ~ tutor_reasoning_w + unique_session_IDs_count + -->
+<!--               (1 | student_tutor_group), -->
+<!--               data = seda_mth, REML = FALSE, control = lmerControl(optimizer = "bobyqa")) -->
+<!-- ``` -->
 
-```{r}
-# Display the model summary
-tab_model(model_40, model_41, model_42, model_43, model_44,  dv.labels = c("Tutor Keeping Together", "Tutor Students Relating", "Tutor Restating", "Tutor Revoicing", "Tutor Reasoning"))
-```
+<!-- ```{r} -->
+<!-- # Display the model summary -->
+<!-- tab_model(model_40, model_41, model_42, model_43, model_44,  dv.labels = c("Tutor Keeping Together", "Tutor Students Relating", "Tutor Restating", "Tutor Revoicing", "Tutor Reasoning")) -->
+<!-- ``` -->
 
 
 
@@ -685,17 +712,17 @@ tab_model(model_40, model_41, model_42, model_43, model_44,  dv.labels = c("Tuto
 # Interaction Effects from Sidney
 ```{r}
 data <- seda_mth;
-data$student_talkmove_ratioWZ <- scale(DescTools::Winsorize(data$unweighted_student_talkmove_ratio,                                                   quantile(data$unweighted_student_talkmove_ratio, probs = c(0, 0.99), na.rm = TRUE)))
-data$tutor_talkmove_ratioWZ <- scale(DescTools::Winsorize(data$unweighted_tutor_talkmove_ratio,  quantile(data$unweighted_tutor_talkmove_ratio, probs = c(0, .99), na.rm = T)))
-data$tutor_utterance_ratioWZ <- scale(DescTools::Winsorize(data$unweighted_tutor_utterance_ratio,  quantile(data$unweighted_tutor_utterance_ratio, probs = c(0, .99), na.rm = T)))
-data$tutor_talkmove_ratioZ <- scale(data$unweighted_tutor_talkmove_ratio)
+data$student_talkmove_ratioWZ <- scale(DescTools::Winsorize(data$mean_talk_move_counts_eucli_dist,                                                   quantile(data$mean_talk_move_counts_eucli_dist, probs = c(0, 0.99), na.rm = TRUE)))
+# data$tutor_talkmove_ratioWZ <- scale(DescTools::Winsorize(data$unweighted_tutor_talkmove_ratio,  quantile(data$unweighted_tutor_talkmove_ratio, probs = c(0, .99), na.rm = T)))
+# data$tutor_utterance_ratioWZ <- scale(DescTools::Winsorize(data$unweighted_tutor_utterance_ratio,  quantile(data$unweighted_tutor_utterance_ratio, probs = c(0, .99), na.rm = T)))
+# data$tutor_talkmove_ratioZ <- scale(data$unweighted_tutor_talkmove_ratio)
 data$unique_session_IDs_countoZ <- scale(data$unique_session_IDs_count)
 
 hist(data$student_talkmove_ratioWZ)
-hist(data$tutor_talkmove_ratioWZ)
-hist(data$tutor_utterance_ratioWZ)
-hist(data$tutor_talkmove_ratioZ)
-hist(data$unique_session_IDs_countoZ)
+# hist(data$tutor_talkmove_ratioWZ)
+# hist(data$tutor_utterance_ratioWZ)
+# hist(data$tutor_talkmove_ratioZ)
+# hist(data$unique_session_IDs_countoZ)
 
 m <- lmer(Slope ~ student_talkmove_ratioWZ *tutor_talkmove_ratioWZ + tutor_utterance_ratioWZ + unique_session_IDs_countoZ + (1| student_tutor_group), data = data, control = lmerControl(optimizer = "bobyqa"))
 
