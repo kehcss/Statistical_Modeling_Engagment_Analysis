@@ -43,6 +43,23 @@ seda <- read.csv(file = "march_14_group_modelling_student_talkmove_achievement_s
 
 ```
 
+## Get the avearge of group slope
+```{r}
+#Group by student_tutor_group, calculate group_slope, and then calculate diff_group_slope
+seda <- seda %>%
+  mutate(S = as.numeric(S),  # Ensure S is numeric
+       I = as.numeric(I)) %>%  # Ensure I is numeric
+ group_by(student_tutor_group) %>%
+ mutate(group_slope = mean(S, na.rm = TRUE),
+        group_intercept = mean(I, na.rm = TRUE),
+        # diff_group_slope = S - group_slope,
+        # diff_group_intercept = I - group_intercept,
+        ) %>%
+ ungroup()
+
+```
+
+
 
 
 ## Data Filterering
@@ -79,6 +96,16 @@ dim(seda_mth)
 
 ```
 
+<!-- ## Select unique student_tutor_group -->
+<!-- ```{r} -->
+<!-- # Group data by student_tutor_group and select unique student_tutor_group as seda_mth; also keep other variables -->
+<!-- seda_mth <- seda_mth %>% -->
+<!--   distinct(student_tutor_group, .keep_all = TRUE)  # Keep all columns while selecting unique rows -->
+<!-- dim(seda_mth) -->
+
+
+<!-- ``` -->
+
 
 
 ## Column Renaming
@@ -95,8 +122,10 @@ seda_mth <- seda_mth %>%
          student_group_asking_for_info_ratio = unweighted_student_asking_for_info_ratio,
          student_group_making_claim_ratio = unweighted_student_making_claim_ratio,
          student_group_providing_evidence_ratio = unweighted_student_providing_evidence_ratio,
-         Intercept = I,
-         Slope = S,
+         # Intercept = I,
+         # Slope = S,
+         Intercept = group_intercept,
+         Slope = group_slope,
          tutor_keeping_together = unweighted_tutor_keeping_together_ratio,
          tutor_students_relating = unweighted_tutor_students_relating_ratio,
          tutor_restating = unweighted_tutor_restating_ratio,
