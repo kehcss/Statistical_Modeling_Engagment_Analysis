@@ -1,0 +1,8 @@
+"0","#Adding Talkmove Predictors 03"
+"0","model_03 <- lmer(Slope ~ tutor_talkmove_ratio_w + unique_session_IDs_count + "
+"0","              (1 | student_tutor_group),"
+"0","              data = seda_mth, REML = TRUE, control = lmerControl(optimizer = ""bobyqa""))"
+"2","Warning: Model failed to converge with max|grad| = 0.717051 (tol = 0.002, component 1)"
+"2","Warning: Model is nearly unidentifiable: very large eigenvalue
+ - Rescale variables?"
+"2","Warning: Model failed to converge with 1 negative eigenvalue: -8.3e-08"

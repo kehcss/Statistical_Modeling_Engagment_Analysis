@@ -1,0 +1,4 @@
+"0","#Adding Uterance Predictors 23"
+"0","model_23 <- blmer(Slope ~ tutor_utterance_ratio_w +"
+"0","              (1 | tutor_ID),"
+"0","              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = ""bobyqa""))"

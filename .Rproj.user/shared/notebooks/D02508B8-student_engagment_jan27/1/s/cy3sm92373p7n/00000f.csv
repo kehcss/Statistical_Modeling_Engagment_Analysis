@@ -1,0 +1,6 @@
+"0","#Adding Talkmove Predictors 02"
+"0","model_902 <- rlmer(Slope ~ co_student_talkmove_ratio +"
+"0","              (1 + co_student_talkmove_ratio | tutor_ID),"
+"0","              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = ""bobyqa""))"
+"2","boundary (singular) fit: see help('isSingular')
+"

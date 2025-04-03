@@ -1,0 +1,5 @@
+"0","ggplot(aes(x=student_group_utterance_ratio_w), data = seda_mth) +"
+"0","  geom_histogram(fill=""grey"",color=""black"") +"
+"0","  xlab(""Histogram of Student's Group Utterance Proportion"") +"
+"0","  ylab(""Count"") +"
+"0","  theme_bw() "

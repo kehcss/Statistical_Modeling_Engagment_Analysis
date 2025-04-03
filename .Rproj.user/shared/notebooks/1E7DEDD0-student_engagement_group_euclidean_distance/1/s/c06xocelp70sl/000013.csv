@@ -1,0 +1,9 @@
+"0","# hist(data$tutor_talkmove_ratioWZ)"
+"0","# hist(data$tutor_utterance_ratioWZ)"
+"0","# hist(data$tutor_talkmove_ratioZ)"
+"0","# hist(data$unique_session_IDs_countoZ)"
+"0",""
+"0","m <- lmer(Slope ~ student_talkmove_ratioWZ *tutor_talkmove_ratioWZ + tutor_utterance_ratioWZ + unique_session_IDs_countoZ + (1| student_tutor_group), data = data, control = lmerControl(optimizer = ""bobyqa""))"
+"2","Error in eval(predvars, data, env) : 
+  object 'tutor_talkmove_ratioWZ' not found
+"

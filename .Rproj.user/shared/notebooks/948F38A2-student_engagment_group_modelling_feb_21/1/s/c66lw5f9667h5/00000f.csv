@@ -1,0 +1,8 @@
+"0","# Select relevant variables"
+"0","data <- seda_mth[, c(""student_group_utterance_ratio_w"",	""tutor_utterance_ratio_w"")]  "
+"0",""
+"0",""
+"0","#Calculate a correlation matrix"
+"0","cor_matrix <- cor(data)"
+"0",""
+"0","tab_corr(data)"

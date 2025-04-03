@@ -1,0 +1,7 @@
+"0","#Winsorize the variables"
+"0",""
+"0","Vars <- c(""student_group_talkmove_ratio"", ""tutor_talkmove_ratio"", ""student_group_utterance_ratio"", ""tutor_utterance_ratio"", ""student_group_relating_ratio"", ""student_group_asking_for_info_ratio"", ""student_group_making_claim_ratio"", ""student_group_providing_evidence_ratio"", ""tutor_keeping_together"", ""tutor_students_relating"", ""tutor_restating"", ""tutor_revoicing"", ""tutor_reasoning"")"
+"0",""
+"0","for (var in Vars) {"
+"0","  seda_mth[paste0(var, ""_w"")] <- Winsorize(seda_mth[[var]], quantile(seda_mth[[var]], probs=c(0.0, 0.99), na.rm = FALSE))"
+"0","}"

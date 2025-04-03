@@ -1,0 +1,7 @@
+"0","seda_mth %>%"
+"0","  ggplot(aes(x=student_group_utterance_ratio_w, y=Slope)) +"
+"0","  geom_point(pch=21, alpha=0.75, fill=""grey"") +"
+"0","  geom_smooth() +"
+"0","  ylab(""Student Maths score Slope"") +"
+"0","  xlab(""Student's Group utterance proportion"") +"
+"0","  theme_bw()"

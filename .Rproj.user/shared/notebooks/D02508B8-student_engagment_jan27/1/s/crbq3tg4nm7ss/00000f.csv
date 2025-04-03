@@ -1,0 +1,7 @@
+"0","model2112 <- blmer(Slope ~ student_talkmove_ratio_w + co_student_talkmove_ratio_w + tutor_talkmove_ratio_w  + tutor_utterance_ratio_w + Intercept + (1  | tutor_ID), data = seda_mth, REML = FALSE, control = lmerControl(optimizer = ""bobyqa""))"
+"0",""
+"0",""
+"0","model2912 <- blmer(Slope ~ student_talkmove_ratio_w + co_student_talkmove_ratio_w + tutor_talkmove_ratio_w  + student_utterance_ratio_w + co_student_utterance_ratio_w + Intercept + (1  | tutor_ID), data = seda_mth, REML = FALSE, control = lmerControl(optimizer = ""bobyqa""))"
+"0",""
+"0","tab_model(model2112, model2912)"
+"0",""

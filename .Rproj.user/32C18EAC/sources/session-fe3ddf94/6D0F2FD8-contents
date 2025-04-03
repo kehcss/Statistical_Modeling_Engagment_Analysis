@@ -1,0 +1,647 @@
+---
+title: "Student Survey"
+author: "Kelechi/Sidney"
+date: "2025-02-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Packages
+
+```{r}
+# load packages #####
+library(tidyverse)  # data processing
+library(haven)      # read in stata data
+library(vtable)     # summary tables
+library(labelled)   # to see and create variable labels
+library(sjPlot)    # regression tables
+library(lme4)      # estimate MLM
+library(lmerTest)  # hypothesis testing for MLM
+library(quantreg)
+library(blme)
+library(writexl)
+library(openxlsx)
+library(ggplot2)
+library(DescTools)
+library(reshape2)
+
+```
+
+# Processing Survey Engagement
+
+```{r}
+
+data <- read.csv("survey_data_23_24.xlsx - survey data -- to share - Feb25_survey_data_23_24.xlsx - survey data.csv")
+
+data$mid_year_math_relationship_average_rating <- as.numeric(data$mid_year_math_relationship_average_rating)
+
+data$student_id <- data$Anon.Student.ID;
+data$tutor_id <- data$Fellow.ID;
+
+begin_vars <- colnames(data)[6:10];
+mid_vars <- colnames(data)[11:16];
+end_vars <- colnames(data)[17:22];
+
+psych::alpha(data[begin_vars], na.rm = T)
+psych::alpha(data[mid_vars], na.rm = T)
+psych::alpha(data[end_vars], na.rm = T)
+
+data$begin <- rowMeans(data[begin_vars], na.rm = T)
+data$mid <- rowMeans(data[mid_vars], na.rm = T)
+data$end <- rowMeans(data[end_vars], na.rm = T)
+
+
+vars <- c("begin", "mid", "end");
+psych::alpha(data[vars], na.rm = T)
+
+data$engagement <- rowMeans(data[vars], na.rm = T)
+
+tableone::CreateContTable(vars = vars, data = data);
+
+data.melt <- melt(data[c(vars, "student_id", "tutor_id")], id = c("student_id", "tutor_id"))
+
+m <- lmer(value ~ variable + (1 | student_id:tutor_id) + (1|tutor_id), data = data.melt)
+tab_model(m)
+
+emmeans::emmeans(m, pairwise ~ variable)
+
+```
+
+## Check for Duplicate in Enagement Survey
+
+```{r}
+# Check for duplicate 'student_id' in data df
+duplicate_student_ids <- data %>% 
+  group_by(Saga.Tutoring.ID) %>% 
+  filter(n() > 1) %>% 
+  ungroup()
+
+# Print the duplicate student IDs
+print(duplicate_student_ids)
+
+```
+
+# Individual Student-Tutor Modelling Approach
+
+## Individual Student Data; Filtering
+
+```{r}
+seda_indvidual <- read.csv(file = "feb13_student_talkmove_achievement_merged.csv")
+
+seda_mth_individual <- seda_indvidual
+
+#Select Student_Tutor with achievement score
+#seda_mth_individual <- seda_mth_individual %>% filter(is_in_achievement == 1)
+
+#Select Student_Tutor with no multiple achievement score
+#seda_mth_individual <- seda_mth_individual %>% filter(is_duplicated_student_tutor_x == 0)
+
+# Select Student_Tutor with unique_session_IDs_count > 4
+#seda_mth_individual <- seda_mth_individual %>% filter(unique_session_IDs_count >= 10)
+
+# Select Student_Tutor with a tutor in the session
+#seda_mth_individual <- seda_mth_individual %>% filter(unique_tutor_id_received_talkmove_count == 1)
+
+dim(seda_mth_individual)
+```
+
+## Merge Survey and Talkmove
+
+```{r}
+#merge data df and seda_mth_individual
+dim(seda_mth_individual)
+merged_data_individual <- merge(seda_mth_individual, data, by.x = "student_id_utterance", by.y = "Saga.Tutoring.ID")
+dim(merged_data_individual)
+
+# Save merged_data as CSV
+#write.csv(merged_data, "merged_data.csv", row.names = FALSE)
+
+
+merged_data_individual <- merged_data_individual %>% filter(!is.nan(engagement))
+dim(merged_data_individual)
+```
+
+## Column Renaming
+
+```{r}
+#Unweighted variables implies speaker level averaging
+merged_data_individual <- merged_data_individual %>%
+  mutate(
+         student_talkmove_ratio = unweighted_student_talkmove_ratio,
+         co_student_talkmove_ratio = unweighted_co_student_talkmove_ratio,
+         student_utterance_ratio = unweighted_student_utterance_ratio,
+         co_student_utterance_ratio = unweighted_co_student_utterance_ratio,
+         tutor_talkmove_ratio = unweighted_tutor_talkmove_ratio,
+         tutor_utterance_ratio = unweighted_tutor_utterance_ratio,
+         student_relating_ratio = unweighted_student_relating_ratio,
+         student_asking_for_info_ratio = unweighted_student_asking_for_info_ratio,
+         student_making_claim_ratio = unweighted_student_making_claim_ratio,
+         student_providing_evidence_ratio = unweighted_student_providing_evidence_ratio,
+         Intercept = I,
+         Slope = S,
+         co_student_relating_ratio = unweighted_co_student_relating_ratio,
+         co_student_asking_for_info_ratio = unweighted_co_student_asking_for_info_ratio,
+         co_student_making_claim_ratio = unweighted_co_student_making_claim_ratio,
+         co_student_providing_evidence_ratio = unweighted_co_student_providing_evidence_ratio,
+         tutor_keeping_together = unweighted_tutor_keeping_together_ratio,
+         tutor_students_relating = unweighted_tutor_students_relating_ratio,
+         tutor_restating = unweighted_tutor_restating_ratio,
+         tutor_revoicing = unweighted_tutor_revoicing_ratio,
+         tutor_reasoning = unweighted_tutor_reasoning_ratio,
+         
+  )
+
+```
+
+## Winzeration of Predictor variables
+```{r}
+#Winsorize the variables
+
+Vars <- c("student_talkmove_ratio", "co_student_talkmove_ratio", "tutor_talkmove_ratio", "student_utterance_ratio", "co_student_utterance_ratio", "tutor_utterance_ratio", "student_relating_ratio", "student_asking_for_info_ratio", "student_making_claim_ratio", "student_providing_evidence_ratio", "co_student_relating_ratio", "co_student_asking_for_info_ratio", "co_student_making_claim_ratio", "co_student_providing_evidence_ratio", "tutor_keeping_together", "tutor_students_relating", "tutor_restating", "tutor_revoicing", "tutor_reasoning")
+
+for (var in Vars) {
+  merged_data_individual[paste0(var, "_w")] <- (Winsorize(merged_data_individual[[var]], quantile(merged_data_individual[[var]], probs=c(0.0, 0.975), na.rm = FALSE)))
+}
+```
+
+
+
+# MLM Modeling
+## Talkmove by Speaker Type as Predictors
+
+### Talkmove by student
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_240 <- blmer(engagement ~ student_talkmove_ratio_w +
+              (1 + student_talkmove_ratio_w  | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+# Display the model summary
+#tab_model(model_24)
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_241 <- blmer(engagement ~ co_student_talkmove_ratio_w +
+              (1 + co_student_talkmove_ratio_w  | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_242 <- blmer(engagement ~ tutor_talkmove_ratio_w +
+              (1 | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+# Display the model summary
+tab_model(model_240, model_241, model_242,  dv.labels = c("Student Talkmove", "Co Student Talkmove", "Tutor Talkmove"))
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_243 <- blmer(engagement ~ student_talkmove_ratio_w + co_student_talkmove_ratio_w + tutor_talkmove_ratio_w + tutor_utterance_ratio_w +
+              (1 + student_talkmove_ratio_w + co_student_talkmove_ratio_w | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+# Display the model summary
+tab_model(model_243)
+```
+
+
+## Model with interaction
+```{r}
+model_2430 <- blmer(engagement ~ student_talkmove_ratio_w*co_student_talkmove_ratio_w + student_talkmove_ratio_w*tutor_talkmove_ratio_w + tutor_utterance_ratio_w + (1 | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+# Display the model summary
+tab_model(model_2430)
+```
+
+
+
+
+## Utterance by Speaker Type as Predictors
+
+```{r}
+model_340 <- blmer(engagement ~ student_utterance_ratio_w +
+              (1 + student_utterance_ratio_w  | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+# Display the model summary
+#tab_model(model_24)
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_341 <- blmer(engagement ~ co_student_utterance_ratio_w +
+              (1 + co_student_utterance_ratio_w  | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_342 <- blmer(engagement ~ tutor_utterance_ratio_w +
+              (1 | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+# Display the model summary
+tab_model(model_340, model_341, model_342,  dv.labels = c("Student Utterance", "Co Student Utterance", "Tutor Utterance"))
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_343 <- blmer(engagement ~ student_utterance_ratio_w + co_student_utterance_ratio_w + tutor_utterance_ratio_w +
+              (1 + student_utterance_ratio_w + co_student_utterance_ratio_w | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+# Display the model summary
+tab_model(model_343)
+```
+
+
+
+## Talkmove Labels by Speaker Type as Predictors
+### Talkmove by  Student
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_20 <- blmer(engagement ~ student_relating_ratio_w +
+              (1 + student_relating_ratio_w | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 31
+model_21 <- blmer(engagement ~ student_asking_for_info_ratio_w +
+              (1 + student_asking_for_info_ratio_w | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+#tab_model(model_21)
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_22 <- blmer(engagement ~ student_making_claim_ratio_w +
+              (1 + student_making_claim_ratio_w | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_23 <- blmer(engagement ~ student_providing_evidence_ratio_w +
+              (1 + student_providing_evidence_ratio_w | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+# Display the model summary
+tab_model(model_20, model_21, model_22, model_23,  dv.labels = c("Student Relating", "Student Asking for Info", "Student making claim", "Student providing evidence"))
+```
+
+
+### Talkmove by Co student
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_020 <- blmer(engagement ~ co_student_relating_ratio_w +
+              (1 + co_student_relating_ratio_w | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 31
+model_021 <- blmer(engagement ~ co_student_asking_for_info_ratio_w +
+              (1 + co_student_asking_for_info_ratio_w | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+#tab_model(model_21)
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_022 <- blmer(engagement ~ co_student_making_claim_ratio_w +
+              (1 + co_student_making_claim_ratio_w | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_023 <- blmer(engagement ~ co_student_providing_evidence_ratio_w +
+              (1 + co_student_providing_evidence_ratio_w | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+# Display the model summary
+tab_model(model_020, model_021, model_022, model_023,  dv.labels = c("Co Student Relating", "Co Student Asking for Info", "Co Student making claim", "Co Student providing evidence"))
+```
+
+
+
+### Talkmove by Tutor
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_420 <- blmer(engagement ~ tutor_keeping_together_w +
+              (1 | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 31
+model_421 <- blmer(engagement ~ tutor_students_relating_w +
+              (1 | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+#tab_model(model_21)
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_422 <- blmer(engagement ~ tutor_restating_w +
+              (1 | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_423 <- blmer(engagement ~ tutor_revoicing_w +
+              (1 | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_424 <- blmer(engagement ~ tutor_reasoning_w +
+              (1 | tutor_id_utterance),
+              data = merged_data_individual, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+
+
+```{r}
+# Display the model summary
+tab_model(model_420, model_421, model_422, model_423, model_424,  dv.labels = c("Tutor Keeping Together", "Tutor Students Relating", "Tutor Restating", "Tutor Revoicing", "Tutor Reasoning"))
+```
+
+
+
+
+# Groups-of-Students attached to Tutor Approach
+
+## Load Data and Filtering
+
+```{r}
+seda <- read.csv(file = "feb20_group_modelling_final_to_r_code.csv")
+
+seda_mth <- seda
+
+#Select Student_Tutor with achievement score
+seda_mth <- seda_mth %>% filter(is_in_achievement == 1)
+
+#Select Student_Tutor with no multiple achievement score
+seda_mth <- seda_mth %>% filter(is_duplicated_student_tutor_x == 0)
+
+# Select Student_Tutor with unique_session_IDs_count > 4
+seda_mth <- seda_mth %>% filter(unique_session_IDs_count >= 10)
+
+# Select Student_Tutor with a tutor in the session
+seda_mth <- seda_mth %>% filter(unique_tutor_id_received_talkmove_count == 1)
+
+dim(seda_mth)
+```
+
+## Column Renaming
+
+```{r}
+#Unweighted variables implies speaker level averaging
+seda_mth <- seda_mth %>%
+  mutate(
+         student_group_talkmove_ratio = unweighted_student_talkmove_ratio,
+         student_group_utterance_ratio = unweighted_student_utterance_ratio,
+         tutor_talkmove_ratio = unweighted_tutor_talkmove_ratio,
+         tutor_utterance_ratio = unweighted_tutor_utterance_ratio,
+         student_group_relating_ratio = unweighted_student_relating_ratio,
+         student_group_asking_for_info_ratio = unweighted_student_asking_for_info_ratio,
+         student_group_making_claim_ratio = unweighted_student_making_claim_ratio,
+         student_group_providing_evidence_ratio = unweighted_student_providing_evidence_ratio,
+         Intercept = I,
+         Slope = S,
+         tutor_keeping_together = unweighted_tutor_keeping_together_ratio,
+         tutor_students_relating = unweighted_tutor_students_relating_ratio,
+         tutor_restating = unweighted_tutor_restating_ratio,
+         tutor_revoicing = unweighted_tutor_revoicing_ratio,
+         tutor_reasoning = unweighted_tutor_reasoning_ratio,
+         
+  )
+
+```
+
+## Merge Survey and Talkmove
+
+```{r}
+#merge data df and seda_mth
+dim(seda_mth)
+merged_data <- merge(seda_mth, data, by.x = "student_id_utterance", by.y = "Saga.Tutoring.ID")
+dim(merged_data)
+
+# Save merged_data as CSV
+#write.csv(merged_data, "merged_data.csv", row.names = FALSE)
+
+
+merged_data <- merged_data %>% filter(!is.nan(engagement))
+dim(merged_data)
+```
+
+## Winzeration of Predictor variables
+```{r}
+#Winsorize the variables
+
+Vars <- c("student_group_talkmove_ratio", "tutor_talkmove_ratio", "student_group_utterance_ratio", "tutor_utterance_ratio", "student_group_relating_ratio", "student_group_asking_for_info_ratio", "student_group_making_claim_ratio", "student_group_providing_evidence_ratio", "tutor_keeping_together", "tutor_students_relating", "tutor_restating", "tutor_revoicing", "tutor_reasoning")
+
+for (var in Vars) {
+  merged_data[paste0(var, "_w")] <- Winsorize(merged_data[[var]], quantile(merged_data[[var]], probs=c(0.0, 0.975), na.rm = FALSE))
+}
+```
+
+
+
+
+# MLM Modeling
+## Talkmove by Speaker Type as Predictors
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_84 <- blmer(engagement ~ student_group_talkmove_ratio_w +
+              (1  | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_85 <- blmer(engagement ~ tutor_talkmove_ratio_w +
+              (1  | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+# Display the model summary
+tab_model(model_84, model_85,  dv.labels = c("Group Student Talkmove", "Tutor Talkmove"))
+```
+
+## Model with interaction
+```{r}
+model_12430 <- blmer(engagement ~ student_group_talkmove_ratio_w*tutor_talkmove_ratio_w + tutor_utterance_ratio_w + (1 | tutor_id_utterance),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+# Display the model summary
+tab_model(model_12430)
+```
+
+
+
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_86 <- blmer(engagement ~ student_group_talkmove_ratio_w + tutor_talkmove_ratio_w +
+              (1  | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+tab_model(model_86)
+```
+
+
+
+
+## Utterance Ratio by Speaker Type as Predictors
+
+```{r}
+#Adding Individual Talkmove Predictors 31
+model_87 <- blmer(engagement ~ student_group_utterance_ratio_w +
+              (1 | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_88 <- blmer(engagement ~ tutor_utterance_ratio_w +
+              (1 | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+# Display the model summary
+tab_model(model_87, model_88,  dv.labels = c("Group Student Utterance", "Tutor Utterance"))
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 33
+model_89 <- blmer(engagement ~ student_group_utterance_ratio_w + tutor_utterance_ratio_w +
+              (1 | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+tab_model(model_89)
+```
+
+
+
+
+## Talkmove Labels by Speaker Type as Predictors
+### Talkmove by  Student
+
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_80 <- blmer(engagement ~ student_group_relating_ratio_w +
+              (1  | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 31
+model_81 <- blmer(engagement ~ student_group_asking_for_info_ratio_w +
+              (1 | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_82 <- blmer(engagement ~ student_group_making_claim_ratio_w +
+              (1 | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_83 <- blmer(engagement ~ student_group_providing_evidence_ratio_w +
+              (1 | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+# Display the model summary
+tab_model(model_80, model_81, model_82, model_83,  dv.labels = c("Student Relating", "Student Asking for Info", "Student making claim", "Student providing evidence"))
+```
+
+### Talkmove by Tutor
+```{r}
+#Adding Individual Talkmove Predictors 30
+model_40 <- blmer(engagement ~ tutor_keeping_together_w +
+              (1 | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 31
+model_41 <- blmer(engagement ~ tutor_students_relating_w +
+              (1 | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_42 <- blmer(engagement ~ tutor_restating_w +
+              (1 | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_43 <- blmer(engagement ~ tutor_revoicing_w +
+              (1 | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_44 <- blmer(engagement ~ tutor_reasoning_w +
+              (1 | student_tutor_group),
+              data = merged_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+```
+
+```{r}
+# Display the model summary
+tab_model(model_40, model_41, model_42, model_43, model_44,  dv.labels = c("Tutor Keeping Together", "Tutor Students Relating", "Tutor Restating", "Tutor Revoicing", "Tutor Reasoning"))
+```
+

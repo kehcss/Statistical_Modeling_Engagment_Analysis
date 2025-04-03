@@ -1,0 +1,7 @@
+"0","#Adding Uterance Predictors 20"
+"0","model_20 <- blmer(Slope ~ student_group_utterance_ratio_w + unique_session_IDs_count + "
+"0","              (1 | student_tutor_group),"
+"0","              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = ""bobyqa""))"
+"0",""
+"0","tab_model(model_20)"
+"0",""

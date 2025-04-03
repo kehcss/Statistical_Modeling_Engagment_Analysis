@@ -1,0 +1,5 @@
+"0","#Adding Individual Talkmove Predictors 30"
+"0","model_30 <- blmer(Slope ~ student_group_relating_ratio_w + unique_session_IDs_count +"
+"0","              (1  | student_tutor_group),"
+"0","              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = ""bobyqa""))"
+"0",""

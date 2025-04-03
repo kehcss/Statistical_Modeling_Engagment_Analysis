@@ -1,0 +1,5 @@
+"0","#Adding Individual Talkmove Predictors 32"
+"0","model_331 <- blmer(Slope ~ student_providing_evidence_ratio_w + unique_session_IDs_count +"
+"0","              (1 + student_providing_evidence_ratio_w | tutor_ID),"
+"0","              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = ""bobyqa""))"
+"2","Warning: Some predictor variables are on very different scales: consider rescaling"

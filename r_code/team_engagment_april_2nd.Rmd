@@ -1,0 +1,477 @@
+---
+title: "Student Engagmement"
+author: "Kelechi Ezema"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Packages
+
+```{r}
+# load packages #####
+library(tidyverse)  # data processing
+library(haven)      # read in stata data
+library(vtable)     # summary tables
+library(labelled)   # to see and create variable labels
+library(lme4)      # estimate MLM
+library(sjPlot)    # regression tables
+library(lmerTest)  # hypothesis testing for MLM
+library(quantreg)
+library(blme)
+library(writexl)
+library(openxlsx)
+library(robustlmm)
+library(DescTools)
+library(reshape2)
+library(robustlmm)
+library(visreg)
+library(emmeans)
+library(car)
+
+```
+
+
+## Load Data
+
+```{r}
+team_file <- read.csv(file = "april_2_team_enagement.csv")
+
+```
+
+
+
+## Data Filterering
+
+```{r}
+team_data <- team_file
+# Select Student_Tutor with participant_count >= 3 (two student and a tutor)
+team_data <- team_data %>% filter(participant_count >= 3)
+
+#Select Student_Tutor with achievement score
+team_data <- team_data %>% filter(is.na(I) == FALSE)
+
+#Select Student_Tutor with tutor in the session
+team_data <- team_data %>% filter(is.na(utterance_count_tutor) == FALSE)
+
+
+# Select Student_Tutor with unique_session_IDs_count > 10
+team_data <- team_data %>% filter(unique_session_IDs_count >= 10)
+
+
+dim(team_data)
+```
+
+## Column Renaming
+
+```{r}
+team_data <- team_data %>%
+  mutate(
+         student_talkmove_mean_across_session = new_talk_move_count_mean_across_session_student,
+         student_utterance_mean_across_session = utterance_count_mean_across_session_student,
+         student_learning_community_mean_across_session = new_learning_community_count_mean_across_session_student,
+         student_rigorous_thinking_mean_across_session = new_rigorous_thinking_count_mean_across_session_student,
+         student_content_knowledge_mean_across_session = new_content_knowledge_count_mean_across_session_student,
+         student_relating_mean_across_session = new_student_relating_count_mean_across_session,
+         student_asking_for_info_mean_across_session = new_student_asking_for_info_count_mean_across_session,
+         student_making_claim_mean_across_session = new_student_making_claim_count_mean_across_session,
+         student_providing_evidence_mean_across_session = new_student_providing_evidence_count_mean_across_session,
+         
+         student_utterance_euclidean_mean_across_session = utterance_count_euclidean_mean_across_session_student,
+         student_talkmove_euclidean_mean_across_session = new_talk_move_count_euclidean_mean_across_session_student,
+         student_learning_community_euclidean_mean_across_session = new_learning_community_count_euclidean_mean_across_session_student,
+         student_rigorous_thinking_euclidean_mean_across_session = new_rigorous_thinking_count_euclidean_mean_across_session_student,
+         student_content_knowledge_euclidean_mean_across_session = new_content_knowledge_count_euclidean_mean_across_session_student,
+         student_relating_euclidean_mean_across_session = new_student_relating_count_euclidean_mean_across_session,
+         student_asking_for_info_euclidean_mean_across_session = new_student_asking_for_info_count_euclidean_mean_across_session,
+         student_making_claim_euclidean_mean_across_session = new_student_making_claim_count_euclidean_mean_across_session,
+         student_providing_evidence_euclidean_mean_across_session = new_student_providing_evidence_count_euclidean_mean_across_session,
+
+         tutor_talkmove_mean_across_session = new_talk_move_count_mean_across_session_tutor,
+         tutor_utterance_mean_across_session = utterance_count_mean_across_session_tutor,
+         tutor_learning_community_mean_across_session = new_learning_community_count_mean_across_session_tutor,
+         tutor_rigorous_thinking_mean_across_session = new_rigorous_thinking_count_mean_across_session_tutor,
+         tutor_content_knowledge_mean_across_session = new_content_knowledge_count_mean_across_session_tutor,
+         tutor_tutor_keeping_together_mean_across_session = new_tutor_keeping_together_count_mean_across_session,
+         tutor_students_relating_mean_across_session = new_tutor_students_relating_count_mean_across_session,
+         tutor_restating_mean_across_session = new_tutor_restating_count_mean_across_session,
+         tutor_revoicing_mean_across_session = new_tutor_revoicing_count_mean_across_session,
+         tutor_reasoning_mean_across_session = new_tutor_reasoning_count_mean_across_session,
+
+         Intercept = I,
+         Slope = S,
+
+  )
+
+```
+
+
+## Rescaling Achievement Intercept and Slope
+
+```{r}
+team_data <- team_data %>%
+  mutate(
+         Slope = Slope *100,
+         Intercept = Intercept*100
+  )
+
+```
+
+
+
+## Histogram for predictors before winsorization
+```{r}
+#Histogram for all the predictors
+hist(team_data$student_talkmove_mean_across_session)
+hist(team_data$student_utterance_mean_across_session)
+hist(team_data$student_learning_community_mean_across_session)
+hist(team_data$student_rigorous_thinking_mean_across_session)
+hist(team_data$student_content_knowledge_mean_across_session)
+hist(team_data$student_relating_mean_across_session)
+hist(team_data$student_asking_for_info_mean_across_session)
+hist(team_data$student_making_claim_mean_across_session)
+hist(team_data$student_providing_evidence_mean_across_session)
+
+hist(team_data$student_utterance_euclidean_mean_across_session)
+hist(team_data$student_talkmove_euclidean_mean_across_session)
+hist(team_data$student_learning_community_euclidean_mean_across_session)
+hist(team_data$student_rigorous_thinking_euclidean_mean_across_session)
+hist(team_data$student_content_knowledge_euclidean_mean_across_session)
+hist(team_data$student_relating_euclidean_mean_across_session)
+hist(team_data$student_asking_for_info_euclidean_mean_across_session)
+hist(team_data$student_making_claim_euclidean_mean_across_session)
+hist(team_data$student_providing_evidence_euclidean_mean_across_session)
+
+hist(team_data$tutor_talkmove_mean_across_session)
+hist(team_data$tutor_utterance_mean_across_session)
+hist(team_data$tutor_learning_community_mean_across_session)
+hist(team_data$tutor_rigorous_thinking_mean_across_session)
+hist(team_data$tutor_content_knowledge_mean_across_session)
+hist(team_data$tutor_tutor_keeping_together_mean_across_session)
+hist(team_data$tutor_students_relating_mean_across_session)
+hist(team_data$tutor_restating_mean_across_session)
+hist(team_data$tutor_revoicing_mean_across_session)
+hist(team_data$tutor_reasoning_mean_across_session)
+
+
+
+```
+
+
+
+## Cummulate Frequency Table of data  
+```{r}
+
+freq_table <- function(x)
+{
+  return(cbind(Freq=table(x), Cumul=cumsum(prop.table(table(x))), relative=prop.table(table(x))));
+}
+
+# Print the frequency table in 2 decimal places
+freq_table(round(team_data$unique_session_IDs_count_w, 1) )
+
+
+```
+
+
+
+
+## Winzeration of Predictor variables
+```{r}
+#Winsorize the variables
+
+Vars <- c("student_talkmove_mean_across_session", "student_utterance_mean_across_session", "student_learning_community_mean_across_session", "student_rigorous_thinking_mean_across_session", "student_content_knowledge_mean_across_session", "student_relating_mean_across_session", "student_asking_for_info_mean_across_session", "student_making_claim_mean_across_session", "student_providing_evidence_mean_across_session", "student_utterance_euclidean_mean_across_session", "student_talkmove_euclidean_mean_across_session", "student_learning_community_euclidean_mean_across_session", "student_rigorous_thinking_euclidean_mean_across_session", "student_content_knowledge_euclidean_mean_across_session", "student_relating_euclidean_mean_across_session", "student_asking_for_info_euclidean_mean_across_session", "student_making_claim_euclidean_mean_across_session", "student_providing_evidence_euclidean_mean_across_session", "tutor_talkmove_mean_across_session", "tutor_utterance_mean_across_session", "tutor_learning_community_mean_across_session", "tutor_rigorous_thinking_mean_across_session", "tutor_content_knowledge_mean_across_session", "tutor_tutor_keeping_together_mean_across_session", "tutor_students_relating_mean_across_session", "tutor_restating_mean_across_session", "tutor_revoicing_mean_across_session", "tutor_reasoning_mean_across_session", "unique_session_IDs_count")
+
+for (var in Vars) {
+  team_data[paste0(var, "_w")] <- Winsorize(team_data[[var]], quantile(team_data[[var]], probs=c(0.0, 0.99), na.rm = FALSE))
+}
+```
+
+## Histogram for predictors after winsorization
+```{r}
+#Histogram for all the predictors
+hist(team_data$student_talkmove_mean_across_session_w)
+hist(team_data$student_utterance_mean_across_session_w)
+hist(team_data$student_learning_community_mean_across_session_w)
+hist(team_data$student_rigorous_thinking_mean_across_session_w)
+hist(team_data$student_content_knowledge_mean_across_session_w)
+hist(team_data$student_relating_mean_across_session_w)
+hist(team_data$student_asking_for_info_mean_across_session_w)
+hist(team_data$student_making_claim_mean_across_session_w)
+hist(team_data$student_providing_evidence_mean_across_session_w)
+
+hist(team_data$student_utterance_euclidean_mean_across_session_w)
+hist(team_data$student_talkmove_euclidean_mean_across_session_w)
+hist(team_data$student_learning_community_euclidean_mean_across_session_w)
+hist(team_data$student_rigorous_thinking_euclidean_mean_across_session_w)
+hist(team_data$student_content_knowledge_euclidean_mean_across_session_w)
+hist(team_data$student_relating_euclidean_mean_across_session_w)
+hist(team_data$student_asking_for_info_euclidean_mean_across_session_w)
+hist(team_data$student_making_claim_euclidean_mean_across_session_w)
+hist(team_data$student_providing_evidence_euclidean_mean_across_session_w)
+
+hist(team_data$tutor_talkmove_mean_across_session_w)
+hist(team_data$tutor_utterance_mean_across_session_w)
+hist(team_data$tutor_learning_community_mean_across_session_w)
+hist(team_data$tutor_rigorous_thinking_mean_across_session_w)
+hist(team_data$tutor_content_knowledge_mean_across_session_w)
+hist(team_data$tutor_tutor_keeping_together_mean_across_session_w)
+hist(team_data$tutor_students_relating_mean_across_session_w)
+hist(team_data$tutor_restating_mean_across_session_w)
+hist(team_data$tutor_revoicing_mean_across_session_w)
+hist(team_data$tutor_reasoning_mean_across_session_w)
+
+hist(team_data$unique_session_IDs_count_w)
+
+
+
+```
+
+
+## Corrlation of team make up 
+
+```{r}
+# Select relevant variables
+data <- team_data[, c("student_talkmove_mean_across_session_w", "tutor_talkmove_mean_across_session_w")]  
+
+#Calculate a correlation matrix
+cor_matrix <- cor(data)
+
+tab_corr(data)
+```
+
+## Corrlation of speaker's group utterance
+```{r}
+# Select relevant variables
+# data <- team_data[, c("student_utterance_mean_across_session_w",	"tutor_utterance_mean_across_session_w")]  
+
+
+data <- team_data[, c("student_utterance_mean_across_session_w",	"tutor_utterance_mean_across_session_w", "student_talkmove_mean_across_session_w", "tutor_talkmove_mean_across_session_w")]
+
+#Calculate a correlation matrix
+cor_matrix <- cor(data)
+
+tab_corr(data)
+
+#cor(team_data$student_utterance_mean_across_session_w, team_data$tutor_utterance_mean_across_session_w)
+```
+
+
+## Correlation of mean and Euclidean distance
+
+```{r}
+cor(team_data$student_talkmove_mean_across_session_w, team_data$student_talkmove_euclidean_mean_across_session_w)
+cor(team_data$student_utterance_mean_across_session_w, team_data$student_utterance_euclidean_mean_across_session_w)
+# cor(team_data$student_learning_community_mean_across_session_w, team_data$student_learning_community_euclidean_mean_across_session_w)
+# cor(team_data$student_rigorous_thinking_mean_across_session_w, team_data$student_rigorous_thinking_euclidean_mean_across_session_w)
+# cor(team_data$student_content_knowledge_mean_across_session_w, team_data$student_content_knowledge_euclidean_mean_across_session_w)
+cor(team_data$student_relating_mean_across_session_w, team_data$student_relating_euclidean_mean_across_session_w)
+cor(team_data$student_asking_for_info_mean_across_session_w, team_data$student_asking_for_info_euclidean_mean_across_session_w)
+cor(team_data$student_making_claim_mean_across_session_w, team_data$student_making_claim_euclidean_mean_across_session_w)
+cor(team_data$student_providing_evidence_mean_across_session_w, team_data$student_providing_evidence_euclidean_mean_across_session_w)
+
+```
+
+
+## Corrlation of Student Talkmove lables
+```{r}
+# Select relevant variables
+data <- team_data[, c("student_relating_mean_across_session_w",	"student_asking_for_info_mean_across_session_w", "student_making_claim_mean_across_session_w", "student_providing_evidence_mean_across_session_w")]  
+
+
+#Calculate a correlation matrix
+cor_matrix <- cor(data)
+
+tab_corr(data)
+```
+
+## Correlation of tutor's talkmove labels
+```{r}
+# Select relevant variables
+data <- team_data[, c("tutor_tutor_keeping_together_mean_across_session_w",	"tutor_students_relating_mean_across_session_w", "tutor_restating_mean_across_session_w", "tutor_revoicing_mean_across_session_w", "tutor_reasoning_mean_across_session_w")]  
+
+
+#Calculate a correlation matrix
+cor_matrix <- cor(data)
+
+tab_corr(data)
+```
+
+
+
+## MLM Modeling
+
+### Talkmove Mean as predictors
+```{r}
+model_01 <- blmer(Slope ~ student_talkmove_mean_across_session_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+
+
+model_02 <- blmer(Slope ~ tutor_talkmove_mean_across_session_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+
+tab_model(model_01, model_02 ,  dv.labels = c("Student Group TalkMove Mean",  "Tutor Talkmove Means"))
+
+```
+
+```{r}
+model_03 <- blmer(Slope ~ student_talkmove_mean_across_session_w + tutor_talkmove_mean_across_session_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+tab_model(model_03,  dv.labels = c("Student and Tutor Talkmove Means"))
+```
+
+
+
+
+### Utterance Mean as predictors
+```{r}
+model_10 <- blmer(Slope ~ student_utterance_mean_across_session_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+model_12 <- blmer(Slope ~ tutor_utterance_mean_across_session_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+tab_model(model_10, model_12 ,  dv.labels = c("Student Group Utterance Mean",  "Tutor Utterance Mean"))
+```
+
+```{r}
+model_13 <- blmer(Slope ~ student_utterance_mean_across_session_w + tutor_utterance_mean_across_session_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+tab_model(model_13,  dv.labels = c("Student and Tutor Utterance Mean"))
+```
+
+
+### Talkmove Diversity (Euclidean Mean) as predictors
+```{r}
+model_03 <- blmer(Slope ~ student_talkmove_euclidean_mean_across_session_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+
+tab_model(model_03, dv.labels = c("Student Group TalkMove Diversity"))
+
+```
+
+### Interaction Effects
+```{r}
+model_04 <- blmer(Slope ~ student_talkmove_mean_across_session_w*tutor_talkmove_mean_across_session_w + tutor_utterance_mean_across_session_w + student_talkmove_euclidean_mean_across_session_w + unique_session_IDs_count_w + 
+              (1 | student_tutor_group),
+              data = team_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+tab_model(model_04, dv.labels = c("Student Group TalkMove Mean * Tutor Talkmove Mean"))
+```
+
+
+
+
+
+### Student Talkmove Category makeup as Predictors
+```{r}
+model_30 <- blmer(Slope ~ student_learning_community_mean_across_session_w + unique_session_IDs_count_w +
+              (1  | student_tutor_group),
+              data = team_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+model_31 <- blmer(Slope ~ student_rigorous_thinking_mean_across_session_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+model_32 <- blmer(Slope ~ student_content_knowledge_mean_across_session_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+tab_model(model_30, model_31, model_32,  dv.labels = c("Student Learning Community", "Student Rigorous Thinking", "Student Content Knowledge"))
+```
+
+
+### Student Talkmove Diversity (Euclidean Mean) as predictors
+```{r}
+model_40 <- blmer(Slope ~ student_learning_community_euclidean_mean_across_session_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+model_41 <- blmer(Slope ~ student_rigorous_thinking_euclidean_mean_across_session_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+model_42 <- blmer(Slope ~ student_content_knowledge_euclidean_mean_across_session_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+tab_model(model_40, model_41, model_42,  dv.labels = c("Student Learning Community", "Student Rigorous Thinking", "Student Content Knowledge"))
+```
+
+
+
+```{r}
+#Adding Individual Talkmove Predictors 31
+model_31 <- blmer(Slope ~ student_group_asking_for_info_ratio_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+  
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_32 <- blmer(Slope ~ student_group_making_claim_ratio_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+```{r}
+#Adding Individual Talkmove Predictors 32
+model_33 <- blmer(Slope ~ student_group_providing_evidence_ratio_w + unique_session_IDs_count_w +
+              (1 | student_tutor_group),
+              data = team_data, REML = FALSE, control = lmerControl(optimizer = "bobyqa"))
+
+```
+
+
+```{r}
+# Display the model summary
+tab_model(model_30, model_31, model_32, model_33,  dv.labels = c("Student Relating", "Student Asking for Info", "Student making claim", "Student providing evidence"))
+```
+
+
+
+
+
+
+
+
+<!-- # Interaction Effects from Sidney -->
+<!-- ```{r} -->
+<!-- data <- team_data; -->
+<!-- data$student_talkmove_ratioWZ <- scale(DescTools::Winsorize(data$mean_talk_move_counts_eucli_dist,                                                   quantile(data$mean_talk_move_counts_eucli_dist, probs = c(0, 0.99), na.rm = TRUE))) -->
+<!-- # data$tutor_talkmove_ratioWZ <- scale(DescTools::Winsorize(data$unweighted_tutor_talkmove_ratio,  quantile(data$unweighted_tutor_talkmove_ratio, probs = c(0, .99), na.rm = T))) -->
+<!-- # data$tutor_utterance_ratioWZ <- scale(DescTools::Winsorize(data$unweighted_tutor_utterance_ratio,  quantile(data$unweighted_tutor_utterance_ratio, probs = c(0, .99), na.rm = T))) -->
+<!-- # data$tutor_talkmove_ratioZ <- scale(data$unweighted_tutor_talkmove_ratio) -->
+<!-- data$unique_session_IDs_countoZ <- scale(data$unique_session_IDs_count) -->
+
+<!-- hist(data$student_talkmove_ratioWZ) -->
+<!-- # hist(data$tutor_talkmove_ratioWZ) -->
+<!-- # hist(data$tutor_utterance_ratioWZ) -->
+<!-- # hist(data$tutor_talkmove_ratioZ) -->
+<!-- # hist(data$unique_session_IDs_countoZ) -->
+
+<!-- m <- lmer(Slope ~ student_talkmove_ratioWZ *tutor_talkmove_ratioWZ + tutor_utterance_ratioWZ + unique_session_IDs_countoZ + (1| student_tutor_group), data = data, control = lmerControl(optimizer = "bobyqa")) -->
+
+<!-- Anova(m, type = 3) -->
+<!-- tab_model(m) -->
+
+<!-- visreg::visreg(m, "student_talkmove_ratioWZ", by = "tutor_talkmove_ratioWZ", gg = T, breaks = c(-1, 0, 1)) -->
+
+<!-- Mod_list <- list(tutor_talkmove_ratioWZ = c(-1, 0, 1)) -->
+
+<!-- emtrends(m, ~student_talkmove_ratioWZ*tutor_talkmove_ratioWZ, var="student_talkmove_ratioWZ",at=Mod_list) -->
+
+<!-- ``` -->

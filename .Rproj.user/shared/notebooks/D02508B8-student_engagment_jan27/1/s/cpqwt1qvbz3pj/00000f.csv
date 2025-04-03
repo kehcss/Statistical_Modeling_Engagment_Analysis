@@ -1,0 +1,15 @@
+"0","# Display the model summary"
+"0","tab_model(model_20, model_22, model_23,  dv.labels = c(""Student Utterance"", ""Co student Utterance"", ""Tutor Utterance""))"
+"1","[1m[33mError[39m in `purrr::map2()`:[22m
+[38;5;255m[36mℹ[38;5;255m In index: 1.
+[36mℹ[38;5;255m With name: model_20.[39m
+[1mCaused by error in `[.data.frame`:[22m
+[33m![39m undefined columns selected
+Backtrace:
+[90m  1. [39m[1msjPlot[22m::tab_model(...)
+[90m  2. [39m[1m[94mpurrr::map2([39m[22m...[1m[94m)[39m[22m
+[90m  3. [39mpurrr:::map2_(""list"", .x, .y, .f, ..., .progress = .progress)
+[90m  7. [39m[1msjPlot[22m (local) .f(.x[[i]], .y[[i]], ...)
+[90m  9. [39m[1mbase[22m::`[.data.frame`(...)
+[90m 10. [39mbase::stop(""undefined columns selected"")
+"

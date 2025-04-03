@@ -1,0 +1,2 @@
+"0","# Display the model summary"
+"0","tab_model(model_301, model_311, model_321, model_331,  dv.labels = c(""Student Relating"", ""Student Asking for Info"", ""Student making claim"", ""Student providing evidence""))"

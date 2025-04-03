@@ -1,0 +1,9 @@
+"0","#Adding Individual Talkmove Predictors 31"
+"0","model_9311 <- rlmer(Slope ~ student_asking_for_info_ratio + unique_session_IDs_count +"
+"0","              (1 + student_asking_for_info_ratio | tutor_ID),"
+"0","              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = ""bobyqa""))"
+"2","Warning: Some predictor variables are on very different scales: consider rescaling"
+"2","boundary (singular) fit: see help('isSingular')
+"
+"2","Warning: Some predictor variables are on very different scales: consider rescaling"
+"2","Warning: Model failed to converge with 1 negative eigenvalue: -4.0e-03"

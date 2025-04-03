@@ -1,0 +1,8 @@
+"0","data <- seda_mth;"
+"0","data$student_talkmove_ratioWZ <- scale(DescTools::Winsorize(data$unweighted_student_talkmove_ratio,                                                   quantile(data$unweighted_student_talkmove_ratio, probs = c(0, 0.99), na.rm = TRUE)))"
+"0","data$tutor_talkmove_ratioWZ <- scale(DescTools::Winsorize(data$unweighted_tutor_talkmove_ratio,  quantile(data$unweighted_tutor_talkmove_ratio, probs = c(0, .99), na.rm = T)))"
+"0","data$tutor_utterance_ratioWZ <- scale(DescTools::Winsorize(data$unweighted_tutor_utterance_ratio,  quantile(data$unweighted_tutor_utterance_ratio, probs = c(0, .99), na.rm = T)))"
+"0","data$tutor_talkmove_ratioZ <- scale(data$unweighted_tutor_talkmove_ratio)"
+"0","data$unique_session_IDs_countoZ <- scale(data$unique_session_IDs_count)"
+"0",""
+"0","hist(data$student_talkmove_ratioWZ)"

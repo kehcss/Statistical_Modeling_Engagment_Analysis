@@ -1,0 +1,7 @@
+"0","#Adding Uterance Predictors 23"
+"0","model_23 <- blmer(Slope ~ tutor_utterance_ratio_w + unique_session_IDs_count + "
+"0","              (1 | student_tutor_group),"
+"0","              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = ""bobyqa""))"
+"2","Warning: Model failed to converge with max|grad| = 0.459554 (tol = 0.002, component 1)"
+"2","Warning: Model is nearly unidentifiable: very large eigenvalue
+ - Rescale variables?"

@@ -1,0 +1,2 @@
+"0","#Histogram for all the predictors"
+"0","hist(seda_mth$student_group_talkmove_ratio)"

@@ -1,0 +1,7 @@
+"0","# Select relevant variables"
+"0","data <- team_data[, c(""student_talkmove_mean_across_session_w"", ""tutor_talkmove_mean_across_session_w"")]  "
+"0",""
+"0","#Calculate a correlation matrix"
+"0","cor_matrix <- cor(data)"
+"0",""
+"0","tab_corr(data)"

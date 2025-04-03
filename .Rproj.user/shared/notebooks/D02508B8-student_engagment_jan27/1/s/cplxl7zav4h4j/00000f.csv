@@ -1,0 +1,4 @@
+"0","#Adding Talkmove Predictors 03"
+"0","model_903 <- rlmer(Slope ~ tutor_talkmove_ratio +"
+"0","              (1 | tutor_ID),"
+"0","              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = ""bobyqa""))"

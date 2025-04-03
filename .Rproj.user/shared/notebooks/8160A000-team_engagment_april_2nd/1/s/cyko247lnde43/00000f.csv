@@ -1,0 +1,6 @@
+"0","team_data <- team_data %>%"
+"0","  mutate("
+"0","         Slope = Slope *100,"
+"0","         Intercept = Intercept*100"
+"0","  )"
+"0",""

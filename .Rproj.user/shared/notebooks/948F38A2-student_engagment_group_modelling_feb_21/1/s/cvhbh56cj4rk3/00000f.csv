@@ -1,0 +1,8 @@
+"0","#Adding Individual Talkmove Predictors 30"
+"0","model_30 <- blmer(Slope ~ student_group_relating_ratio_w + unique_session_IDs_count +"
+"0","              (1  | student_tutor_group),"
+"0","              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = ""bobyqa""))"
+"2","Warning: Some predictor variables are on very different scales: consider rescaling"
+"2","Warning: Model failed to converge with max|grad| = 0.0891821 (tol = 0.002, component 1)"
+"2","Warning: Model is nearly unidentifiable: very large eigenvalue
+ - Rescale variables?"
