@@ -1,0 +1,16 @@
+# Ignore .css, .xlsx, and .png files
+*.csv
+*.xlsx
+*.png
+*.docx
+# Ignore R-related user files
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+# Ensure .rmd, .py, and .ipynb files are not ignored
+!*.rmd
+!*.py
+!*.ipynb
+!*.html
+!*.r
