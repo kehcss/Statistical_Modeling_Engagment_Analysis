@@ -1,5 +1,0 @@
-"0","# Select relevant variables"
-"0","data <- seda_mth[, c(""student_group_talkmove_ratio"", ""tutor_talkmove_ratio_w"")]  "
-"2","Error in `[.data.frame`(seda_mth, , c(""student_group_talkmove_ratio"",  : 
-  undefined columns selected
-"

@@ -1,6 +1,0 @@
-"0","#Adding Individual Talkmove Predictors 32"
-"0","model_9321 <- rlmer(Slope ~ student_making_claim_ratio + unique_session_IDs_count +"
-"0","              (1 + student_making_claim_ratio | tutor_ID),"
-"0","              data = seda_mth, REML = FALSE, control = lmerControl(optimizer = ""bobyqa""))"
-"2","Warning: Some predictor variables are on very different scales: consider rescaling"
-"2","Warning: Some predictor variables are on very different scales: consider rescaling"

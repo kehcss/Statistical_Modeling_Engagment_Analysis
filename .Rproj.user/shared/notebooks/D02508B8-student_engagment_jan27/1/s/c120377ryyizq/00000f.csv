@@ -1,5 +1,0 @@
-"0","model_0402 <- rlmer(Slope ~ student_talkmove_ratio + co_student_talkmove_ratio + tutor_talkmove_ratio +"
-"0","              (1 + student_talkmove_ratio + co_student_talkmove_ratio  | tutor_ID),"
-"0","              data = seda_mth, REML = FALSE)"
-"2","Warning: Method 'DAStau' does not support blocks of size larger than 2. Falling back to method 'DASvar'."
-"0","tab_model(model_0402)"

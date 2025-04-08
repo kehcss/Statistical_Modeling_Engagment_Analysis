@@ -1,7 +1,0 @@
-"0","#Adding Talkmove Predictors 04"
-"0","model_04 <- blmer(Slope ~ student_group_talkmove_ratio_w + tutor_talkmove_ratio_w + unique_session_IDs_count_w +"
-"0","              (1 | student_tutor_group),"
-"0","              data = seda_mth, REML = TRUE, control = lmerControl(optimizer = ""bobyqa""))"
-"2","Error in eval(predvars, data, env) : 
-  object 'tutor_talkmove_ratio_w' not found
-"

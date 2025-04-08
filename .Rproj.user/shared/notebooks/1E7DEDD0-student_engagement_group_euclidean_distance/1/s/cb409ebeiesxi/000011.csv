@@ -1,4 +1,0 @@
-"0","cor(seda_mth$unweighted_student_talkmove_ratio, seda_mth$weighted_student_talkmove_ratio)"
-"2","Error in cor(seda_mth$unweighted_student_talkmove_ratio, seda_mth$weighted_student_talkmove_ratio) : 
-  supply both 'x' and 'y' or a matrix-like 'x'
-"

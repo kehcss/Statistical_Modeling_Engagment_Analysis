@@ -1,5 +1,0 @@
-"0","model_03 <- blmer(Slope ~ student_talkmove_mean_across_session_w + tutor_talkmove_mean_across_session_w + unique_session_IDs_count_w +"
-"0","              (1 | student_tutor_group),"
-"0","              data = team_data, REML = TRUE, control = lmerControl(optimizer = ""bobyqa""))"
-"0",""
-"0","tab_model(model_03,  dv.labels = c(""Student and Tutor Talkmove Means""))"

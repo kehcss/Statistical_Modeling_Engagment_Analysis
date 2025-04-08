@@ -1,4 +1,0 @@
-"0","# Get the summary and store it in a variable"
-"0","lev1 <- seda_mth %>%"
-"0","  select(student_talkmove_ratio_w,student_utterance_ratio_w, co_student_talkmove_ratio_w,  co_student_utterance_ratio_w, Slope, Intercept, unique_session_IDs_count)"
-"0","  sumtable(lev1)"
