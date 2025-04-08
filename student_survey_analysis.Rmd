@@ -67,7 +67,6 @@ m <- lmer(value ~ variable + (1 | student_id:tutor_id) + (1|tutor_id), data = da
 tab_model(m)
 
 emmeans::emmeans(m, pairwise ~ variable)
-
 ```
 
 ## Check for Duplicate in Enagement Survey

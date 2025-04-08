@@ -256,3 +256,41 @@ vif(model_04)
 ```
 
 
+## Self reported engagement
+```{r}
+data <- team_file
+
+data$mid_year_math_relationship_average_rating <- as.numeric(data$mid_year_math_relationship_average_rating)
+
+data$student_id <- data$Anon.Student.ID;
+data$tutor_id <- data$Fellow.ID;
+
+begin_vars <- colnames(team_file)[138:142];
+mid_vars <- colnames(team_file)[143:148];
+end_vars <- colnames(team_file)[149:154];
+
+
+psych::alpha(data[begin_vars], na.rm = T)
+psych::alpha(data[mid_vars], na.rm = T)
+psych::alpha(data[end_vars], na.rm = T)
+
+data$begin <- rowMeans(data[begin_vars], na.rm = T)
+data$mid <- rowMeans(data[mid_vars], na.rm = T)
+data$end <- rowMeans(data[end_vars], na.rm = T)
+
+
+vars <- c("begin", "mid", "end");
+psych::alpha(data[vars], na.rm = T)
+
+data$engagement <- rowMeans(data[vars], na.rm = T)
+
+tableone::CreateContTable(vars = vars, data = data);
+
+data.melt <- melt(data[c(vars, "student_id", "tutor_id")], id = c("student_id", "tutor_id"))
+
+m <- lmer(value ~ variable + (1 | student_id:tutor_id) + (1|tutor_id), data = data.melt)
+tab_model(m)
+
+emmeans::emmeans(m, pairwise ~ variable)
+
+```

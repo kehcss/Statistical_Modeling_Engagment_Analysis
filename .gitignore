@@ -3,6 +3,7 @@
 *.xlsx
 *.png
 *.docx
+*
 # Ignore R-related user files
 .Rproj.user/
 .Rhistory
