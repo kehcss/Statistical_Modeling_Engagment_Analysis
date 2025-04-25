@@ -44,12 +44,9 @@ library(car)
 ## Load Data
 
 ```{r}
-
-
-# student_tutor_file <- read.csv(file = "student_tutor_ready_for_rcode_april_22_asr_augumened_with_confidence.csv")
-# student_tutor_file <- read.csv(file = "student_tutor_ready_for_rcode_april_21_asr_augumened.csv")
-student_tutor_file <- read.csv(file = "student_tutor_ready_for_rcode_april_22_asr_fine_tuned.csv")
-
+#student_tutor_file <- read.csv(file = "student_tutor_ready_for_rcode_april_22_asr_augumened_with_confidence.csv")
+student_tutor_file <- read.csv(file = "student_tutor_ready_for_rcode_april_21_asr_augumened.csv")
+#student_tutor_file <- read.csv(file = "student_tutor_ready_for_rcode_april_22_asr_fine_tuned.csv")
 
 
 ```
@@ -102,11 +99,6 @@ emmeans::emmeans(m, pairwise ~ variable)
 ```{r}
 student_tutor_data <- data
 
-
-# #Select Student_Tutor_Group with tutor in the session
-# student_tutor_data <- student_tutor_data %>% filter(is.na(utterance_proportion_tutor) == FALSE)
-
-
 # Select Student_Tutor_Group with unique_session_IDs_count > 10
 student_tutor_data <- student_tutor_data %>% filter(unique_session_IDs_count >= 10)
 
@@ -144,30 +136,6 @@ student_tutor_data <- student_tutor_data %>%
 ```
 
 
-<!-- ## Averaging Student Group Slopes (Only used in Section 11.2) -->
-<!-- ```{r} -->
-<!-- #Group by student_tutor_group, calculate group_slope, -->
-<!-- student_tutor_data <- student_tutor_data %>% -->
-<!--   mutate(S = as.numeric(S), -->
-<!--        I = as.numeric(I), -->
-<!--        num_sessions = as.numeric(num_sessions)) %>% -->
-<!--  group_by(student_tutor_group) %>% -->
-<!--  mutate(group_slope = mean(S, na.rm = TRUE), -->
-<!--         group_intercept = mean(I, na.rm = TRUE), -->
-<!--         group_engagement = mean(engagement, na.rm = TRUE),  -->
-<!--         num_sessions_mean = mean(num_sessions, na.rm = TRUE), -->
-<!--         ) %>% -->
-<!--  ungroup() -->
-
-
-<!-- # Create student_ID and tutor_ID from student_tutor_id -->
-<!-- student_tutor_data <- student_tutor_data %>% -->
-<!--   mutate(student_tutor_id = as.character(student_tutor_id)) %>% -->
-<!--   separate(student_tutor_id, into = c("student_ID", "tutor_ID"), sep = "_", remove = FALSE) %>% -->
-<!--   mutate(student_ID = as.numeric(student_ID), -->
-<!--          tutor_ID = as.numeric(tutor_ID)) -->
-
-<!-- ``` -->
 
 
 
@@ -281,10 +249,10 @@ vif(model_01)
 ```
 
 
-### Slope ~ student_tm_mean*co_student_tm_mean
 
+### engagement ~ student_tm_mean
 ```{r}
-model_02 <- blmer(Slope ~ student_tm_mean_ZW*co_student_tm_mean_ZW + student_tm_mean_ZW*tutor_tm_mean_ZW + tutor_utterance_mean_ZW + num_sessions_ZW +
+model_02 <- blmer(engagement ~ student_tm_mean_ZW + co_student_tm_mean_ZW + tutor_tm_mean_ZW + tutor_utterance_mean_ZW + num_sessions_ZW +
               (1 | tutor_ID),
               data = student_tutor_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
 
@@ -294,4 +262,20 @@ tab_model(model_02)
 # check for multicollinearity
 vif(model_02)
 ```
+
+
+
+<!-- ### Slope ~ student_tm_mean*co_student_tm_mean -->
+
+<!-- ```{r} -->
+<!-- model_03 <- blmer(Slope ~ student_tm_mean_ZW*co_student_tm_mean_ZW + student_tm_mean_ZW*tutor_tm_mean_ZW + tutor_utterance_mean_ZW + num_sessions_ZW + -->
+<!--               (1 | tutor_ID), -->
+<!--               data = student_tutor_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa")) -->
+
+
+<!-- tab_model(model_03) -->
+
+<!-- # check for multicollinearity -->
+<!-- vif(model_03) -->
+<!-- ``` -->
 
