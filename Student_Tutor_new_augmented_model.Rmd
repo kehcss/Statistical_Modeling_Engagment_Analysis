@@ -8,7 +8,7 @@ output:
 knit: (function(inputFile, encoding) { 
           rmarkdown::render(inputFile,
                         encoding=encoding, 
-                        output_file= "Team_engagment_april2nd.html") })
+                        output_file= "Student_Tutor_new_augmented_model_April24.html") })
 ---
 
 ```{r setup, include=FALSE}
@@ -44,26 +44,56 @@ library(car)
 ## Load Data
 
 ```{r}
-#student_tutor_file <- read.csv(file = "student_tutor_ready_for_rcode_april_22_asr_augumened_with_confidence.csv")
-student_tutor_file <- read.csv(file = "student_tutor_ready_for_rcode_april_21_asr_augumened.csv")
-#student_tutor_file <- read.csv(file = "student_tutor_ready_for_rcode_april_22_asr_fine_tuned.csv")
+student_tutor_file_asr_conf <- read.csv(file = "student_tutor_ready_for_rcode_may_7th_asr_fine_augumened_with_conf_filtered_all_achievement.csv")
+student_tutor_file_asr_aug <- read.csv(file = "student_tutor_ready_for_rcode_may_7th_asr_fine_augumened_all_achievement.csv")
+student_tutor_file_asr_fin <- read.csv(file = "student_tutor_ready_for_rcode_may_7th_asr_fine_tuned_all_achievement.csv")
+
+# select relavnt columns from the data
+student_tutor_file_asr_conf <- student_tutor_file_asr_conf %>%
+  select(student_tutor_id, unique_session_IDs_count, I, S, talkmove_proportion_mean, utterance_proportion_mean, words_proportion_mean,
+         co_student_talkmove_proportion_mean_mean, co_student_utterance_proportion_mean_mean, co_student_words_proportion_mean_mean,
+         tutor_talkmove_proportion_mean, tutor_utterance_proportion_mean, tutor_words_proportion_mean)
+
+student_tutor_file_asr_aug <- student_tutor_file_asr_aug %>%
+  select(student_tutor_id, unique_session_IDs_count, I, S, tutor_ID, talkmove_proportion_mean, utterance_proportion_mean, words_proportion_mean,
+         co_student_talkmove_proportion_mean_mean, co_student_utterance_proportion_mean_mean, co_student_words_proportion_mean_mean,
+        tutor_talkmove_proportion_mean, tutor_utterance_proportion_mean, tutor_words_proportion_mean, Anon.Student.ID, Fellow.ID, baseline_how_much_like_math, baseline_confidence_in_math_skills_abilities, baseline_comfortable_participating_in_math_class, baseline_enjoy_mathematical_challenges, baseline_math_relationship_average_rating, mid_year_how_much_like_math, mid_year_confidence_in_math_skills_abilities, mid_year_comfortable_participating_in_math_class, mid_year_enjoy_mathematical_challenges, mid_year_math_relationship_average_rating, mid_year_relationship_with_tutor, final_how_much_like_math, final_confidence_in_math_skills_abilities, final_comfortable_participating_in_math_class, final_enjoy_mathematical_challenges, final_math_relationship_average_rating, final_relationship_with_tutor, is_duplicated_survey,
+)
+
+student_tutor_file_asr_fin <- student_tutor_file_asr_fin %>%
+  select(student_tutor_id, unique_session_IDs_count, I, S, talkmove_proportion_mean, utterance_proportion_mean, words_proportion_mean,
+         co_student_talkmove_proportion_mean_mean, co_student_utterance_proportion_mean_mean, co_student_words_proportion_mean_mean,
+         tutor_talkmove_proportion_mean, tutor_utterance_proportion_mean, tutor_words_proportion_mean)
 
 
+
+# Merge the three datasets with suffixes
+merged_data <- student_tutor_file_asr_conf %>%
+  full_join(student_tutor_file_asr_aug, by = "student_tutor_id", suffix = c("_conf", "_aug")) %>%
+  full_join(student_tutor_file_asr_fin, by = "student_tutor_id", suffix = c("", "_fin"))
+
+# # Add suffix "_conf" to columns from student_tutor_file_asr_conf
+# colnames(merged_data) <- gsub("(?<!student_tutor_id)(?<!_aug)(?<!_fin)$", "_conf", colnames(merged_data), perl = TRUE)
+# 
+
+
+# save the merged data as csv
+#write.csv(merged_data, file = "student_tutor_ready_for_rcode_april_29_all_merged.csv", row.names = FALSE)
 ```
 
 
 ## Self reported engagement
 ```{r}
-data <- student_tutor_file
+data <- merged_data
 
-data$mid_year_math_relationship_average_rating <- as.numeric(data$mid_year_math_relationship_average_rating)
+data$mid_year_math_relationship_average_rating_conf <- as.numeric(data$mid_year_math_relationship_average_rating)
 
 data$student_id <- data$Anon.Student.ID;
 data$tutor_id <- data$Fellow.ID;
 
-begin_vars <- colnames(student_tutor_file)[34:38];
-mid_vars <- colnames(student_tutor_file)[39:44];
-end_vars <- colnames(student_tutor_file)[45:50];
+begin_vars <- colnames(merged_data)[29:33];
+mid_vars <- colnames(merged_data)[34:39];
+end_vars <- colnames(merged_data)[40:45];
 
 
 psych::alpha(data[begin_vars], na.rm = T)
@@ -114,23 +144,43 @@ dim(student_tutor_data)
 ```{r}
 student_tutor_data <- student_tutor_data %>%
   mutate(
-         student_tm_mean = talkmove_proportion_mean,
-         student_utterance_mean = utterance_proportion_mean,
-         student_word_mean = words_proportion_mean,
-         
-         
-         co_student_tm_mean = co_student_talkmove_proportion_mean,
-         co_student_utterance_mean = co_student_utterance_proportion_mean,
-         co_student_word_mean = co_student_words_proportion_mean,
-         
-         tutor_tm_mean = tutor_talkmove_proportion_mean,
-         tutor_utterance_mean = tutor_utterance_proportion_mean,
-         tutor_word_mean = tutor_words_proportion_mean,
+    #Model trained on Human and ASR Augmented transcript data
+         student_tm_mean_aug = talkmove_proportion_mean_aug,
+         student_utterance_mean_aug = utterance_proportion_mean_aug,
+         student_word_mean_aug = words_proportion_mean_aug,
+         co_student_tm_mean_aug = co_student_talkmove_proportion_mean_mean_aug,
+         co_student_utterance_mean_aug = co_student_utterance_proportion_mean_mean_aug,
+         co_student_word_mean_aug = co_student_words_proportion_mean_mean_aug,
+         tutor_tm_mean_aug = tutor_talkmove_proportion_mean_aug,
+         tutor_utterance_mean_aug = tutor_utterance_proportion_mean_aug,
+         tutor_word_mean_aug = tutor_words_proportion_mean_aug,
 
-
+    #Model trained on Human transcript data
+         student_tm_mean_fin = talkmove_proportion_mean,
+         student_utterance_mean_fin = utterance_proportion_mean,
+         student_word_mean_fin = words_proportion_mean,
+         co_student_tm_mean_fin = co_student_talkmove_proportion_mean_mean,
+         co_student_utterance_mean_fin = co_student_utterance_proportion_mean_mean,
+         co_student_word_mean_fin = co_student_words_proportion_mean_mean,
+         tutor_tm_mean_fin = tutor_talkmove_proportion_mean,
+         tutor_utterance_mean_fin = tutor_utterance_proportion_mean,
+         tutor_word_mean_fin = tutor_words_proportion_mean,         
+         
+    #Model trained on Human and ASR Augmented transcript data with confidence filtering     
+         student_tm_mean_conf = talkmove_proportion_mean_conf,
+         student_utterance_mean_conf = utterance_proportion_mean_conf,
+         student_word_mean_conf = words_proportion_mean_conf,
+         co_student_tm_mean_conf = co_student_talkmove_proportion_mean_mean_conf,
+         co_student_utterance_mean_conf = co_student_utterance_proportion_mean_mean_conf,
+         co_student_word_mean_conf = co_student_words_proportion_mean_mean_conf,
+         tutor_tm_mean_conf = tutor_talkmove_proportion_mean_conf,
+         tutor_utterance_mean_conf = tutor_utterance_proportion_mean_conf,
+         tutor_word_mean_conf = tutor_words_proportion_mean_conf,
+         
+         
          Intercept = I,
          Slope = S,
-         num_sessions = unique_session_IDs_count,
+         num_sessions_fin = unique_session_IDs_count,
   )
 
 ```
@@ -163,11 +213,20 @@ plot_histogram <- function(df, vars, id)
 }
 
 
+# Define the base variables
 vars <- c("student_tm_mean", "student_utterance_mean", "student_word_mean", 
           "co_student_tm_mean", "co_student_utterance_mean", "co_student_word_mean",
-          "tutor_tm_mean", "tutor_utterance_mean", "tutor_word_mean", "num_sessions")
+          "tutor_tm_mean", "tutor_utterance_mean", "tutor_word_mean")
 
-plot_histogram(student_tutor_data, vars, id = "student_tutor_id")
+# Generate variables for each suffix
+vars_aug <- paste0(vars, "_aug")
+vars_fin <- paste0(vars, "_fin")
+vars_conf <- paste0(vars, "_conf")
+
+# Plot histograms for _conf, _fin, and _aug cases
+plot_histogram(student_tutor_data, vars_aug, id = "student_tutor_id")
+plot_histogram(student_tutor_data, vars_fin, id = "student_tutor_id")
+plot_histogram(student_tutor_data, vars_conf, id = "student_tutor_id")
 
 
 ```
@@ -177,13 +236,26 @@ plot_histogram(student_tutor_data, vars, id = "student_tutor_id")
 ```{r}
 #Winsorize the variables
 
-vars <- c("student_tm_mean", "student_utterance_mean", "student_word_mean",  
-         "co_student_tm_mean", "co_student_utterance_mean", "co_student_word_mean",
-         "tutor_tm_mean", "tutor_utterance_mean", "tutor_word_mean", "num_sessions")
-
-for (var in vars) {
-  student_tutor_data[paste0(var, "_ZW")] <- scale(DescTools::Winsorize(student_tutor_data[[var]], quantile(student_tutor_data[[var]], probs=c(0.0, 0.99), na.rm = FALSE)))
+# Loop through each variable in vars_aug, vars_fin, vars_conf
+for (var_list in list(vars_aug, vars_fin, vars_conf)) {
+  for (var in var_list) {
+    # Apply Winsorization and scaling
+    student_tutor_data[paste0(var, "_ZW")] <- scale(
+      DescTools::Winsorize(
+        student_tutor_data[[var]], 
+        quantile(student_tutor_data[[var]], probs = c(0.0, 0.99), na.rm = TRUE)
+      )
+    )
+  }
 }
+
+# winsorize the num_sessions
+student_tutor_data$num_sessions_ZW <- scale(
+  DescTools::Winsorize(
+    student_tutor_data$num_sessions_fin, 
+    quantile(student_tutor_data$num_sessions_fin, probs = c(0.0, 0.99), na.rm = TRUE)
+  )
+)
 ```
 
 
@@ -206,12 +278,15 @@ for (var in vars) {
 
 ## Histogram for predictors after winsorization
 ```{r}
-#Histogram for all the predictors
-vars <- c("student_tm_mean_ZW", "student_utterance_mean_ZW", "student_word_mean_ZW", 
-          "co_student_tm_mean_ZW", "co_student_utterance_mean_ZW", "co_student_word_mean_ZW",
-          "tutor_tm_mean_ZW", "tutor_utterance_mean_ZW", "tutor_word_mean_ZW", "num_sessions_ZW")
+# Add the _ZW suffix to each variable list
+vars_aug_ZW <- paste0(vars_aug, "_ZW")
+vars_fin_ZW <- paste0(vars_fin, "_ZW")
+vars_conf_ZW <- paste0(vars_conf, "_ZW")
 
-plot_histogram(student_tutor_data, vars, id = "student_tutor_id")
+# Plot histograms for each case
+plot_histogram(student_tutor_data, vars_aug_ZW, id = "student_tutor_id")
+plot_histogram(student_tutor_data, vars_fin_ZW, id = "student_tutor_id")
+plot_histogram(student_tutor_data, vars_conf_ZW, id = "student_tutor_id")
 
 
 ```
@@ -221,48 +296,100 @@ plot_histogram(student_tutor_data, vars, id = "student_tutor_id")
 
 ```{r}
 # Select relevant variables
-data <- student_tutor_data[, c("student_tm_mean_ZW",  "student_utterance_mean_ZW", "student_word_mean_ZW", 
-                      "co_student_tm_mean_ZW", "co_student_utterance_mean_ZW", "co_student_word_mean_ZW",
-                      "tutor_tm_mean_ZW", "tutor_utterance_mean_ZW", "tutor_word_mean_ZW", "num_sessions_ZW")]  
+# Calculate correlation matrix for vars_conf_ZW
+data_aug <- student_tutor_data[, vars_aug_ZW]
+data_fin <- student_tutor_data[, vars_fin_ZW]
+data_conf <- student_tutor_data[, vars_conf_ZW]
 
-#Calculate a correlation matrix
-cor_matrix <- cor(data)
 
-tab_corr(data)
+cor_matrix_aug <- cor(data_aug, use = "complete.obs")
+cor_matrix_fin <- cor(data_fin, use = "complete.obs")
+cor_matrix_conf <- cor(data_conf, use = "complete.obs")
+
+
+
+
+# tab_corr for a formatted correlation table
+tab_corr(data_aug)
+tab_corr(data_fin)
+tab_corr(data_conf)
 ```
 
 ## MLM Modeling
 
-
-
 ### Slope ~ student_tm_mean
 ```{r}
-model_01 <- blmer(Slope ~ student_tm_mean_ZW + co_student_tm_mean_ZW + tutor_tm_mean_ZW + tutor_utterance_mean_ZW + num_sessions_ZW +
+model_01 <- blmer(Slope ~ student_tm_mean_aug_ZW + co_student_tm_mean_aug_ZW + student_utterance_mean_aug_ZW + co_student_utterance_mean_aug_ZW + tutor_tm_mean_aug_ZW + num_sessions_ZW +
               (1 | tutor_ID),
               data = student_tutor_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
 
 
-tab_model(model_01)
+model_02 <- blmer(Slope ~ student_tm_mean_fin_ZW + co_student_tm_mean_fin_ZW + student_utterance_mean_fin_ZW + co_student_utterance_mean_fin_ZW + tutor_tm_mean_fin_ZW + num_sessions_ZW +
+              (1 | tutor_ID),
+              data = student_tutor_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
 
-# check for multicollinearity
+
+model_03 <- blmer(Slope ~ student_tm_mean_conf_ZW + co_student_tm_mean_conf_ZW + student_utterance_mean_conf_ZW + co_student_utterance_mean_conf_ZW + tutor_tm_mean_conf_ZW + num_sessions_ZW +
+              (1 | tutor_ID),
+              data = student_tutor_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+
+tab_model(model_01, model_02, model_03)
+
 vif(model_01)
+vif(model_02)
+vif(model_03)
 ```
+
+
+
 
 
 
 ### engagement ~ student_tm_mean
 ```{r}
-model_02 <- blmer(engagement ~ student_tm_mean_ZW + co_student_tm_mean_ZW + tutor_tm_mean_ZW + tutor_utterance_mean_ZW + num_sessions_ZW +
+model_01 <- blmer(engagement ~ student_tm_mean_aug_ZW + co_student_tm_mean_aug_ZW + student_utterance_mean_aug_ZW + co_student_utterance_mean_aug_ZW + tutor_tm_mean_aug_ZW + num_sessions_ZW +
+              (1 | tutor_ID),
+              data = student_tutor_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+model_02 <- blmer(engagement ~ student_tm_mean_fin_ZW + co_student_tm_mean_fin_ZW + student_utterance_mean_fin_ZW + co_student_utterance_mean_fin_ZW + tutor_tm_mean_fin_ZW + num_sessions_ZW +
+              (1 | tutor_ID),
+              data = student_tutor_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+model_03 <- blmer(engagement ~ student_tm_mean_conf_ZW + co_student_tm_mean_conf_ZW + student_utterance_mean_conf_ZW + co_student_utterance_mean_conf_ZW + tutor_tm_mean_conf_ZW + num_sessions_ZW +
+              (1 | tutor_ID),
+              data = student_tutor_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+tab_model(model_01, model_02, model_03)
+
+vif(model_01)
+vif(model_02)
+vif(model_03)
+```
+
+
+
+### Slope ~ student_tm_mean
+```{r}
+model_01 <- blmer(Slope ~ student_tm_mean_aug_ZW*co_student_tm_mean_aug_ZW + student_utterance_mean_aug_ZW + co_student_utterance_mean_aug_ZW + tutor_tm_mean_aug_ZW*student_tm_mean_aug_ZW + num_sessions_ZW +
+              (1 | tutor_ID),
+              data = student_tutor_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+model_02 <- blmer(Slope ~ student_tm_mean_fin_ZW*co_student_tm_mean_fin_ZW + student_utterance_mean_fin_ZW + co_student_utterance_mean_fin_ZW + tutor_tm_mean_fin_ZW*student_tm_mean_fin_ZW + num_sessions_ZW +
+              (1 | tutor_ID),
+              data = student_tutor_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+
+model_03 <- blmer(Slope ~ student_tm_mean_conf_ZW*co_student_tm_mean_conf_ZW + student_utterance_mean_conf_ZW + co_student_utterance_mean_conf_ZW + tutor_tm_mean_conf_ZW*student_tm_mean_conf_ZW + num_sessions_ZW +
               (1 | tutor_ID),
               data = student_tutor_data, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
 
 
-tab_model(model_02)
+tab_model(model_01, model_02, model_03)
 
-# check for multicollinearity
+vif(model_01)
 vif(model_02)
+vif(model_03)
 ```
-
 
 
 <!-- ### Slope ~ student_tm_mean*co_student_tm_mean -->
